@@ -28,7 +28,7 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
 
     return {
       animationDuration: 400,
-      grid: { left: 48, right: 16, top: 30, bottom: 64, containLabel: false },
+      grid: { left: 48, right: 12, top: 30, bottom: 64, containLabel: false },
       tooltip: {
         trigger: "axis" as const,
         backgroundColor: dark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.95)",
@@ -98,10 +98,20 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
           markLine: {
             silent: true,
             symbol: "none",
+            label: { show: false },
             data: [
-              { yAxis: intensityMarks.moderate, lineStyle: { color: intensityColors.moderate.colorHex, type: "dashed" as const } },
-              { yAxis: intensityMarks.high, lineStyle: { color: intensityColors.high.colorHex, type: "dashed" as const } },
-              { yAxis: intensityMarks.very_high, lineStyle: { color: intensityColors.very_high.colorHex, type: "dashed" as const } },
+              {
+                yAxis: intensityMarks.moderate,
+                lineStyle: { color: intensityColors.moderate.colorHex, type: "dashed" as const, width: 1.5 },
+              },
+              {
+                yAxis: intensityMarks.high,
+                lineStyle: { color: intensityColors.high.colorHex, type: "dashed" as const, width: 1.5 },
+              },
+              {
+                yAxis: intensityMarks.very_high,
+                lineStyle: { color: intensityColors.very_high.colorHex, type: "dashed" as const, width: 1.5 },
+              },
             ],
           },
         },
