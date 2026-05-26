@@ -23,6 +23,8 @@ export const PENDING_POLLEN_OPTIONS = [
 export const AIR_OPTIONS: AllergyOption<AirQualityKey>[] = [
   { key: "pm2_5", label: "PM2.5", description: "微小粒子。呼吸器に影響しやすい" },
   { key: "pm10", label: "PM10", description: "黄砂・粉じんを含む粒子状物質" },
+  { key: "dust", label: "黄砂 (ダスト)", description: "中国・モンゴルから飛来。春にPM10上昇の原因に" },
+  { key: "uv_index", label: "UV指数", description: "紫外線の強さ。外出・花粉症対策の判断に" },
   { key: "ozone", label: "オゾン (O₃)", description: "夏季に上昇しやすい光化学物質" },
   { key: "nitrogen_dioxide", label: "NO₂", description: "交通量の多い地域で高い" },
   { key: "sulphur_dioxide", label: "SO₂", description: "工業地帯由来" },

@@ -67,7 +67,7 @@ export function AllergySettings({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 30, scale: 0.96 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="safe-pb fixed inset-x-0 bottom-0 z-50 flex max-h-[90dvh] flex-col rounded-t-3xl bg-white shadow-2xl dark:bg-slate-900 lg:left-1/2 lg:top-1/2 lg:bottom-auto lg:max-h-[80vh] lg:w-[600px] lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-2xl"
+                className="fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col rounded-t-3xl bg-white shadow-2xl dark:bg-slate-900 lg:left-1/2 lg:top-1/2 lg:bottom-auto lg:max-h-[88vh] lg:w-[600px] lg:-translate-x-1/2 lg:-translate-y-1/2 lg:rounded-2xl"
               >
                 <div className="grid place-items-center pt-2">
                   <span className="h-1 w-12 rounded-full bg-slate-300 dark:bg-slate-600 lg:hidden" />
@@ -88,7 +88,7 @@ export function AllergySettings({
                   </Dialog.Close>
                 </div>
 
-                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4">
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     気になる花粉や物質をチェックすると、該当指標を強調表示し、しきい値を超えた時にお知らせします。
                     <br />

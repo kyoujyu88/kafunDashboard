@@ -13,7 +13,9 @@ export type AirQualityKey =
   | "nitrogen_dioxide"
   | "sulphur_dioxide"
   | "ozone"
-  | "european_aqi";
+  | "european_aqi"
+  | "dust"
+  | "uv_index";
 
 export type MetricKey = PollenKey | AirQualityKey;
 
@@ -29,6 +31,8 @@ export const POLLEN_KEYS: PollenKey[] = [
 export const AIR_QUALITY_KEYS: AirQualityKey[] = [
   "pm2_5",
   "pm10",
+  "dust",
+  "uv_index",
   "ozone",
   "nitrogen_dioxide",
   "sulphur_dioxide",

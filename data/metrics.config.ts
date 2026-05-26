@@ -132,6 +132,24 @@ export const METRICS: Record<MetricKey, MetricMeta> = {
     description: "欧州大気質指数(総合)",
     thresholds: { moderate: 40, high: 60, very_high: 80 },
   },
+  dust: {
+    key: "dust",
+    label: "黄砂 (ダスト)",
+    shortLabel: "黄砂",
+    category: "air",
+    unit: "µg/m³",
+    description: "中国・モンゴルから飛来する砂塵。春にPM10を押し上げる原因",
+    thresholds: { moderate: 50, high: 200, very_high: 500 },
+  },
+  uv_index: {
+    key: "uv_index",
+    label: "UV指数",
+    shortLabel: "UV",
+    category: "air",
+    unit: "",
+    description: "紫外線の強さ。外出・花粉症対策の判断に",
+    thresholds: { moderate: 3, high: 6, very_high: 8 },
+  },
 };
 
 export const INTENSITY_META: Record<

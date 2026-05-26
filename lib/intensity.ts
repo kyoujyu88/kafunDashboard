@@ -33,9 +33,21 @@ export function getIntensityInfo(metric: MetricKey, value: number | null | undef
   }
   const meta = INTENSITY_META[level];
   const isAir = METRICS[metric].category === "air";
+  const UV_LABELS: Record<IntensityLevel, string> = {
+    low: "弱い",
+    moderate: "中程度",
+    high: "強い",
+    very_high: "非常に強い",
+  };
+  const label =
+    metric === "uv_index"
+      ? UV_LABELS[level]
+      : isAir
+      ? AIR_LEVEL_LABELS[level]
+      : meta.label;
   return {
     level,
-    label: isAir ? AIR_LEVEL_LABELS[level] : meta.label,
+    label,
     colorHex: meta.colorHex,
     bgClass: meta.bgClass,
     ringClass: meta.ringClass,
