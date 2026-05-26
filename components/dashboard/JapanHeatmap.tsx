@@ -117,40 +117,52 @@ export function JapanHeatmap({ selectedCode, onSelect, defaultMetric = "pm2_5" }
           scaleLimit: { min: 0.8, max: 5 },
           zoom: 1.1,
           center: [136.5, 35.5],
-          data: mapData,
+          // データレベルで選択中の県だけラベル＋枠線を付与 (selectedModeは使わない)
+          data: mapData.map((d) => ({
+            name: d.name,
+            value: d.value,
+            selected: false, // selectedModeを無効にするためfalse固定
+            label: d.name === selectedName
+              ? {
+                  show: true,
+                  color: dark ? "#f1f5f9" : "#0f172a",
+                  fontSize: 11,
+                  fontWeight: "bold" as const,
+                  textBorderColor: dark ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.8)",
+                  textBorderWidth: 2,
+                }
+              : { show: false },
+            itemStyle: d.name === selectedName
+              ? {
+                  borderColor: "#06b6d4",
+                  borderWidth: 2.5,
+                }
+              : undefined,
+          })),
           nameProperty: "nam_ja",
+          selectedMode: false,
+          label: { show: false },
           itemStyle: {
             borderColor: dark ? "#1e293b" : "#e2e8f0",
             borderWidth: 0.5,
             areaColor: dark ? "#334155" : "#cbd5e1",
           },
           emphasis: {
+            disabled: false,
             label: {
               show: true,
               color: dark ? "#f1f5f9" : "#0f172a",
               fontSize: 11,
               fontWeight: "bold" as const,
+              textBorderColor: dark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.7)",
+              textBorderWidth: 2,
             },
             itemStyle: {
-              areaColor: "#06b6d4",
-              borderColor: "#0891b2",
+              // areaColorを指定しない → visualMapの色を維持したままborderだけ強調
+              borderColor: "#e2e8f0",
               borderWidth: 1.5,
             },
           },
-          select: {
-            label: {
-              show: true,
-              color: dark ? "#f1f5f9" : "#0f172a",
-              fontSize: 11,
-              fontWeight: "bold" as const,
-            },
-            itemStyle: {
-              areaColor: "#0891b2",
-              borderColor: "#0e7490",
-              borderWidth: 2,
-            },
-          },
-          selectedMode: "single",
         },
       ],
     };
