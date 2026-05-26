@@ -28,7 +28,7 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
 
     return {
       animationDuration: 400,
-      grid: { left: 44, right: 16, top: 30, bottom: 40 },
+      grid: { left: 48, right: 16, top: 30, bottom: 64, containLabel: false },
       tooltip: {
         trigger: "axis" as const,
         backgroundColor: dark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.95)",
@@ -42,9 +42,13 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
         axisLabel: {
           color: dark ? "#94a3b8" : "#64748b",
           fontSize: 10,
+          margin: 10,
           formatter: (value: string) => {
             const d = new Date(value);
-            return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:00`;
+            const h = d.getHours();
+            if (h === 0) return `${d.getMonth() + 1}/${d.getDate()}\n0:00`;
+            if (h % 6 === 0) return `${h}:00`;
+            return "";
           },
           hideOverlap: true,
         },
@@ -57,7 +61,18 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
       },
       dataZoom: [
         { type: "inside" as const, throttle: 50 },
-        { type: "slider" as const, height: 18, bottom: 6, borderColor: "transparent", fillerColor: dark ? "#334155" : "#cbd5e1" },
+        {
+          type: "slider" as const,
+          height: 20,
+          bottom: 8,
+          borderColor: "transparent",
+          backgroundColor: dark ? "#1e293b" : "#f1f5f9",
+          fillerColor: dark ? "#334155" : "#cbd5e1",
+          handleStyle: { color: dark ? "#64748b" : "#94a3b8" },
+          moveHandleStyle: { color: dark ? "#475569" : "#cbd5e1" },
+          dataBackground: { lineStyle: { color: dark ? "#334155" : "#cbd5e1" }, areaStyle: { color: dark ? "#1e293b" : "#f1f5f9" } },
+          showDetail: false,
+        },
       ],
       series: [
         {
