@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import type { AlertItem } from "@/hooks/useAllergyAlerts";
+import type { WatchAlertItem } from "@/hooks/useWatchAlerts";
 
 const COOLDOWN_MS = 4 * 60 * 60 * 1000;
 
@@ -22,7 +22,7 @@ function setLastNotified(metric: string) {
   }
 }
 
-export function useBrowserNotification(enabled: boolean, alerts: AlertItem[], regionName: string) {
+export function useBrowserNotification(enabled: boolean, alerts: WatchAlertItem[], regionName: string) {
   const lastSeenRef = useRef<string>("");
 
   const requestPermission = useCallback(async (): Promise<NotificationPermission> => {

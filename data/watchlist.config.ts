@@ -1,12 +1,12 @@
 import type { AirQualityKey, PollenKey } from "@/lib/openMeteo.types";
 
-export interface AllergyOption<K extends string> {
+export interface WatchOption<K extends string> {
   key: K;
   label: string;
   description: string;
 }
 
-export const POLLEN_OPTIONS: AllergyOption<PollenKey>[] = [
+export const POLLEN_OPTIONS: WatchOption<PollenKey>[] = [
   { key: "alder_pollen", label: "ハンノキ", description: "早春に飛散。シラカバとの交差反応に注意" },
   { key: "birch_pollen", label: "シラカバ", description: "春先に北日本で多く飛散" },
   { key: "grass_pollen", label: "イネ科", description: "春〜秋にかけて広く飛散" },
@@ -20,7 +20,7 @@ export const PENDING_POLLEN_OPTIONS = [
   { key: "japanese_cypress", label: "ヒノキ", description: "Open-Meteo未対応・準備中" },
 ];
 
-export const AIR_OPTIONS: AllergyOption<AirQualityKey>[] = [
+export const AIR_OPTIONS: WatchOption<AirQualityKey>[] = [
   { key: "pm2_5", label: "PM2.5", description: "微小粒子。呼吸器に影響しやすい" },
   { key: "pm10", label: "PM10", description: "黄砂・粉じんを含む粒子状物質" },
   { key: "dust", label: "黄砂 (ダスト)", description: "中国・モンゴルから飛来。春にPM10上昇の原因に" },

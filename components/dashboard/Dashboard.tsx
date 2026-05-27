@@ -9,13 +9,14 @@ import { ForecastChart } from "@/components/dashboard/ForecastChart";
 import { JapanHeatmap } from "@/components/dashboard/JapanHeatmap";
 import { RegionSheet } from "@/components/dashboard/RegionSheet";
 import { BetaNotice } from "@/components/dashboard/BetaNotice";
-import { AllergyAlertBanner } from "@/components/dashboard/AllergyAlertBanner";
-import { AllergySettings } from "@/components/settings/AllergySettings";
+import { WatchAlertBanner } from "@/components/dashboard/WatchAlertBanner";
+import { RadiationCard } from "@/components/dashboard/RadiationCard";
+import { WatchSettings } from "@/components/settings/WatchSettings";
 import { OnboardingDialog } from "@/components/settings/OnboardingDialog";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { useAirQuality } from "@/hooks/useAirQuality";
-import { useAllergyAlerts } from "@/hooks/useAllergyAlerts";
-import { useAllergyProfile } from "@/hooks/useAllergyProfile";
+import { useWatchAlerts } from "@/hooks/useWatchAlerts";
+import { useWatchProfile } from "@/hooks/useWatchProfile";
 import { useBrowserNotification } from "@/hooks/useBrowserNotification";
 import { usePersistedRegion } from "@/hooks/usePersistedRegion";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
@@ -36,9 +37,9 @@ export function Dashboard() {
     togglePollen,
     toggleAir,
     reset,
-  } = useAllergyProfile();
+  } = useWatchProfile();
 
-  const { alerts, highestLevel } = useAllergyAlerts(profile, data);
+  const { alerts, highestLevel } = useWatchAlerts(profile, data);
   const { requestPermission } = useBrowserNotification(
     profile.enableBrowserNotification,
     alerts,
@@ -83,7 +84,7 @@ export function Dashboard() {
           <div className="space-y-3 sm:space-y-4 lg:col-span-2">
             <BetaNotice />
 
-            <AllergyAlertBanner
+            <WatchAlertBanner
               alerts={alerts}
               highestLevel={highestLevel}
               hasProfile={hasProfile}
@@ -108,7 +109,7 @@ export function Dashboard() {
                   </h2>
                   {hasProfile && (
                     <span className="text-xs text-slate-500 dark:text-slate-400">
-                      ❤ あなたの注目項目を強調表示中
+                      ⭐ 注目項目を強調表示中
                     </span>
                   )}
                 </div>
@@ -118,6 +119,9 @@ export function Dashboard() {
                   regionCode={regionCode}
                   highlightKeys={highlightKeys}
                 />
+                <div className="mt-2 sm:mt-3">
+                  <RadiationCard regionCode={regionCode} />
+                </div>
               </motion.section>
             </AnimatePresence>
 
@@ -153,7 +157,7 @@ export function Dashboard() {
         onSelect={setRegionCode}
       />
 
-      <AllergySettings
+      <WatchSettings
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         profile={profile}

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { AirQualityKey, PollenKey } from "@/lib/openMeteo.types";
 import type { IntensityLevel } from "@/data/metrics.config";
 
-export interface AllergyProfile {
+export interface WatchProfile {
   version: 1;
   pollens: PollenKey[];
   airQuality: AirQualityKey[];
@@ -14,9 +14,10 @@ export interface AllergyProfile {
   updatedAt: number;
 }
 
-const STORAGE_KEY = "kafun.allergyProfile";
+const STORAGE_KEY = "kafun.watchProfile";
+const LEGACY_KEY = "kafun.allergyProfile"; // migrate from old key
 
-const DEFAULT_PROFILE: AllergyProfile = {
+const DEFAULT_PROFILE: WatchProfile = {
   version: 1,
   pollens: [],
   airQuality: [],
@@ -26,25 +27,37 @@ const DEFAULT_PROFILE: AllergyProfile = {
   updatedAt: 0,
 };
 
-function loadProfile(): AllergyProfile {
+function loadProfile(): WatchProfile {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    // Try new key first
+    let raw = window.localStorage.getItem(STORAGE_KEY);
+
+    // Migrate from legacy key
+    if (!raw) {
+      const legacyRaw = window.localStorage.getItem(LEGACY_KEY);
+      if (legacyRaw) {
+        window.localStorage.setItem(STORAGE_KEY, legacyRaw);
+        window.localStorage.removeItem(LEGACY_KEY);
+        raw = legacyRaw;
+      }
+    }
+
     if (!raw) return DEFAULT_PROFILE;
-    const parsed = JSON.parse(raw) as Partial<AllergyProfile>;
+    const parsed = JSON.parse(raw) as Partial<WatchProfile>;
     if (parsed.version !== 1) return DEFAULT_PROFILE;
     return {
       ...DEFAULT_PROFILE,
       ...parsed,
       pollens: Array.isArray(parsed.pollens) ? (parsed.pollens as PollenKey[]) : [],
       airQuality: Array.isArray(parsed.airQuality) ? (parsed.airQuality as AirQualityKey[]) : [],
-    } as AllergyProfile;
+    } as WatchProfile;
   } catch {
     return DEFAULT_PROFILE;
   }
 }
 
-export function useAllergyProfile() {
-  const [profile, setProfile] = useState<AllergyProfile>(DEFAULT_PROFILE);
+export function useWatchProfile() {
+  const [profile, setProfile] = useState<WatchProfile>(DEFAULT_PROFILE);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -52,7 +65,7 @@ export function useAllergyProfile() {
     setHydrated(true);
   }, []);
 
-  const save = useCallback((next: AllergyProfile) => {
+  const save = useCallback((next: WatchProfile) => {
     const stamped = { ...next, updatedAt: Date.now() };
     setProfile(stamped);
     try {
@@ -63,7 +76,7 @@ export function useAllergyProfile() {
   }, []);
 
   const update = useCallback(
-    (patch: Partial<AllergyProfile>) => {
+    (patch: Partial<WatchProfile>) => {
       save({ ...profile, ...patch });
     },
     [profile, save]
@@ -96,4 +109,4 @@ export function useAllergyProfile() {
   return { profile, hydrated, save, update, togglePollen, toggleAir, reset };
 }
 
-export const ALLERGY_PROFILE_KEY = STORAGE_KEY;
+export const WATCH_PROFILE_KEY = STORAGE_KEY;

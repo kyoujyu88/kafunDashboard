@@ -5,28 +5,28 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Switch from "@radix-ui/react-switch";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, X, ShieldCheck, BellRing, RotateCcw, Heart } from "lucide-react";
+import { Check, X, Star, BellRing, RotateCcw } from "lucide-react";
 import {
   AIR_OPTIONS,
   ALERT_LEVEL_OPTIONS,
   PENDING_POLLEN_OPTIONS,
   POLLEN_OPTIONS,
-} from "@/data/allergy.config";
-import type { AllergyProfile } from "@/hooks/useAllergyProfile";
+} from "@/data/watchlist.config";
+import type { WatchProfile } from "@/hooks/useWatchProfile";
 import { cn } from "@/lib/cn";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  profile: AllergyProfile;
+  profile: WatchProfile;
   onTogglePollen: (key: import("@/lib/openMeteo.types").PollenKey) => void;
   onToggleAir: (key: import("@/lib/openMeteo.types").AirQualityKey) => void;
-  onUpdate: (patch: Partial<AllergyProfile>) => void;
+  onUpdate: (patch: Partial<WatchProfile>) => void;
   onReset: () => void;
   onRequestNotification: () => Promise<NotificationPermission>;
 }
 
-export function AllergySettings({
+export function WatchSettings({
   open,
   onOpenChange,
   profile,
@@ -75,8 +75,8 @@ export function AllergySettings({
 
                 <div className="flex items-center justify-between border-b border-slate-200/60 px-4 py-3 dark:border-slate-700/60">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="text-cyan-500" size={18} />
-                    <Dialog.Title className="text-base font-semibold">アレルギー設定</Dialog.Title>
+                    <Star className="text-cyan-500" size={18} />
+                    <Dialog.Title className="text-base font-semibold">注目項目の設定</Dialog.Title>
                   </div>
                   <Dialog.Close asChild>
                     <button
@@ -90,7 +90,7 @@ export function AllergySettings({
 
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    気になる花粉や物質をチェックすると、該当指標を強調表示し、しきい値を超えた時にお知らせします。
+                    気になる花粉や大気質にチェックを入れると、該当指標を強調表示し、しきい値を超えた時にお知らせします。
                     <br />
                     設定は端末のローカル(localStorage)にのみ保存され、サーバには送信されません。
                     現在 <span className="font-semibold">{totalSelected}</span> 件選択中。
@@ -124,7 +124,7 @@ export function AllergySettings({
                                 <p className="text-sm font-medium">{opt.label}</p>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">{opt.description}</p>
                               </div>
-                              {checked && <Heart size={14} className="text-rose-500" fill="currentColor" />}
+                              {checked && <Star size={14} className="text-cyan-500" fill="currentColor" />}
                             </label>
                           </li>
                         );
@@ -173,7 +173,7 @@ export function AllergySettings({
                                 <p className="text-sm font-medium">{opt.label}</p>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">{opt.description}</p>
                               </div>
-                              {checked && <Heart size={14} className="text-rose-500" fill="currentColor" />}
+                              {checked && <Star size={14} className="text-cyan-500" fill="currentColor" />}
                             </label>
                           </li>
                         );
@@ -186,7 +186,7 @@ export function AllergySettings({
                     <RadioGroup.Root
                       value={profile.alertLevel}
                       onValueChange={(v) =>
-                        onUpdate({ alertLevel: v as AllergyProfile["alertLevel"] })
+                        onUpdate({ alertLevel: v as WatchProfile["alertLevel"] })
                       }
                       className="space-y-1.5"
                     >
@@ -239,7 +239,7 @@ export function AllergySettings({
                     className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
                     <RotateCcw size={14} />
-                    設定をリセット
+                    注目項目をリセット
                   </button>
                 </div>
               </motion.div>

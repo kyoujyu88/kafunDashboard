@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Star } from "lucide-react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Badge } from "@/components/ui/Badge";
 import { METRICS } from "@/data/metrics.config";
@@ -36,9 +36,9 @@ export function MetricCard({ metric, value, highlighted = false }: Props) {
       {highlighted && (
         <span
           aria-label="あなたの注目項目"
-          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-white/80 text-rose-500 shadow-sm dark:bg-slate-800/80"
+          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-white/80 text-cyan-500 shadow-sm dark:bg-slate-800/80"
         >
-          <Heart size={14} fill="currentColor" />
+          <Star size={14} fill="currentColor" />
         </span>
       )}
 

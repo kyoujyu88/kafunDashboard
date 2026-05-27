@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import type { AllergyProfile } from "@/hooks/useAllergyProfile";
+import type { WatchProfile } from "@/hooks/useWatchProfile";
 import { classifyIntensity, isLevelAtOrAbove } from "@/lib/intensity";
 import { extractCurrentValue, extractHourlySeries } from "@/lib/openMeteo";
 import type { MetricKey, OpenMeteoResponse } from "@/lib/openMeteo.types";
 import { METRICS } from "@/data/metrics.config";
 
-export interface AlertItem {
+export interface WatchAlertItem {
   metric: MetricKey;
   label: string;
   currentValue: number | null;
@@ -16,15 +16,15 @@ export interface AlertItem {
   upcomingPeakValue?: number;
 }
 
-export function useAllergyAlerts(
-  profile: AllergyProfile,
+export function useWatchAlerts(
+  profile: WatchProfile,
   data: OpenMeteoResponse | undefined
-): { alerts: AlertItem[]; highestLevel: "moderate" | "high" | "very_high" | null } {
+): { alerts: WatchAlertItem[]; highestLevel: "moderate" | "high" | "very_high" | null } {
   return useMemo(() => {
     const watched: MetricKey[] = [...profile.pollens, ...profile.airQuality];
     if (!data || watched.length === 0) return { alerts: [], highestLevel: null };
 
-    const alerts: AlertItem[] = [];
+    const alerts: WatchAlertItem[] = [];
     let highestLevel: "moderate" | "high" | "very_high" | null = null;
 
     for (const metric of watched) {

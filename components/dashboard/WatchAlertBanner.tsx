@@ -2,11 +2,11 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
-import type { AlertItem } from "@/hooks/useAllergyAlerts";
+import type { WatchAlertItem } from "@/hooks/useWatchAlerts";
 import { formatTime } from "@/lib/format";
 
 interface Props {
-  alerts: AlertItem[];
+  alerts: WatchAlertItem[];
   highestLevel: "moderate" | "high" | "very_high" | null;
   hasProfile: boolean;
   regionName: string;
@@ -18,7 +18,7 @@ const LEVEL_BG = {
   very_high: "from-red-500/40 to-red-700/20 ring-red-500/70",
 };
 
-export function AllergyAlertBanner({ alerts, highestLevel, hasProfile, regionName }: Props) {
+export function WatchAlertBanner({ alerts, highestLevel, hasProfile, regionName }: Props) {
   if (!hasProfile) return null;
 
   const activeAlerts = alerts.filter((a) => a.level);
@@ -85,7 +85,7 @@ export function AllergyAlertBanner({ alerts, highestLevel, hasProfile, regionNam
         >
           <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-300" />
           <p className="text-xs text-emerald-800 dark:text-emerald-200 sm:text-sm">
-            注目指標はすべて落ち着いています
+            注目項目はすべて落ち着いています
           </p>
         </motion.div>
       )}

@@ -41,7 +41,7 @@ export function Header({ regionName, onOpenSettings, onOpenRegion, lastUpdated }
           <button
             type="button"
             onClick={onOpenSettings}
-            aria-label="アレルギー設定を開く"
+            aria-label="注目項目の設定を開く"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-200/60 active:scale-95 dark:text-slate-300 dark:hover:bg-slate-700/60"
           >
             <Settings2 size={18} />

@@ -4,15 +4,15 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Sparkles, X } from "lucide-react";
 import { useState } from "react";
-import { AIR_OPTIONS, POLLEN_OPTIONS } from "@/data/allergy.config";
-import type { AllergyProfile } from "@/hooks/useAllergyProfile";
+import { AIR_OPTIONS, POLLEN_OPTIONS } from "@/data/watchlist.config";
+import type { WatchProfile } from "@/hooks/useWatchProfile";
 import type { AirQualityKey, PollenKey } from "@/lib/openMeteo.types";
 import { cn } from "@/lib/cn";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (profile: Partial<AllergyProfile>) => void;
+  onSave: (profile: Partial<WatchProfile>) => void;
 }
 
 export function OnboardingDialog({ open, onOpenChange, onSave }: Props) {
@@ -149,7 +149,7 @@ export function OnboardingDialog({ open, onOpenChange, onSave }: Props) {
                       </div>
                       <p className="mt-4 text-base font-semibold">準備完了!</p>
                       <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                        花粉 {pollens.length}件 / 空気質 {air.length}件 を注目項目に設定します。
+                        花粉 {pollens.length}件 / 空気質 {air.length}件 を注目項目に登録します。
                       </p>
                       <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                         ヘッダーの歯車アイコンからいつでも変更できます。
