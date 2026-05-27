@@ -1,0 +1,59 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "kafun-dashboard",
+  "compatibility_date": "2025-03-01",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "routes": [
+    {
+      "pattern": "kafunair.aituber-tkg.com",
+      "custom_domain": true
+    }
+  ],
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "kafun-dashboard"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+
+  // === Phase 2: ISR キャッシュ ===
+  // R2 を恒久ストレージ、Worker メモリ内 regional cache でホットパス高速化
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "kafun-dashboard-cache"
+    }
+  ],
+  // Durable Object: revalidate 後の再生成をバックグラウンドキューで処理
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "NEXT_CACHE_DO_QUEUE",
+        "class_name": "DOQueueHandler"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["DOQueueHandler"]
+    }
+  ]
+
+  // Phase 3+ で必要になったら追加:
+  // - d1_databases (NEXT_TAG_CACHE_D1) … On-demand revalidation
+}
