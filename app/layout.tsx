@@ -1,13 +1,20 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { siteUrl } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: "KafunAir — 花粉飛散 & 空気質ダッシュボード",
   description:
     "全国47都道府県の花粉(ハンノキ・シラカバ・イネ科ほか)とPM2.5などの空気質をリアルタイムで一望できる、動的でかっこいいダッシュボード。",
   applicationName: "KafunAir",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "KafunAir" },
+  alternates: {
+    types: {
+      "application/rss+xml": [{ url: "/feed.xml", title: "KafunAir 全国サマリ" }],
+    },
+  },
 };
 
 export const viewport: Viewport = {

@@ -123,4 +123,41 @@ export function extractHourlySeries(
   return { time, values };
 }
 
+export interface DailyAggregate {
+  /** YYYY-MM-DD in Asia/Tokyo */
+  date: string;
+  max: number | null;
+  avg: number | null;
+}
+
+/**
+ * Buckets hourly values by JST calendar day (Open-Meteo already returns timezone-local timestamps
+ * when timezone=Asia/Tokyo is passed, so the first 10 chars of the ISO string are the JST date).
+ */
+export function aggregateDaily(
+  response: OpenMeteoResponse | undefined,
+  key: MetricKey
+): DailyAggregate[] {
+  const { time, values } = extractHourlySeries(response, key);
+  if (time.length === 0) return [];
+
+  const buckets = new Map<string, number[]>();
+  for (let i = 0; i < time.length; i++) {
+    const v = values[i];
+    if (typeof v !== "number") continue;
+    const date = time[i].slice(0, 10);
+    const arr = buckets.get(date) ?? [];
+    arr.push(v);
+    buckets.set(date, arr);
+  }
+
+  return Array.from(buckets.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, arr]) => ({
+      date,
+      max: arr.length ? Math.max(...arr) : null,
+      avg: arr.length ? arr.reduce((s, n) => s + n, 0) / arr.length : null,
+    }));
+}
+
 export { ALL_METRIC_KEYS, AIR_QUALITY_KEYS, POLLEN_KEYS };
