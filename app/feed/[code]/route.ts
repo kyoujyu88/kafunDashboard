@@ -12,8 +12,9 @@ export async function generateStaticParams() {
   return PREFECTURES.flatMap((p) => [{ code: p.code }, { code: `${p.code}.xml` }]);
 }
 
-export async function GET(_req: NextRequest, ctx: { params: { code: string } }) {
-  const code = ctx.params.code.replace(/\.xml$/, "");
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ code: string }> }) {
+  const { code: rawCode } = await ctx.params;
+  const code = rawCode.replace(/\.xml$/, "");
   const region = getPrefecture(code);
   if (!region) {
     return NextResponse.json({ error: "Prefecture not found" }, { status: 404 });

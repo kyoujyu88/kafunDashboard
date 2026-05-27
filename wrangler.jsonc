@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "kafun-dashboard",
+  "compatibility_date": "2025-03-01",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "kafun-dashboard"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  }
+  // Phase 2+ で追加予定:
+  // - r2_buckets (NEXT_INC_CACHE_R2_BUCKET) … ISR/SSGキャッシュ
+  // - durable_objects (NEXT_CACHE_DO_QUEUE) … リバリデーションキュー
+  // - d1_databases (NEXT_TAG_CACHE_D1) … On-demand revalidation
+}

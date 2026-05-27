@@ -42,7 +42,7 @@ export function JapanHeatmap({ selectedCode, onSelect, defaultMetric = "pm2_5" }
     let cancelled = false;
     Promise.all([
       import("echarts").then((m) => m.registerMap),
-      fetch("/japan.geo.json").then((r) => r.json()),
+      fetch("/japan.geo.json").then((r) => r.json() as Promise<Parameters<typeof import("echarts").registerMap>[1]>),
     ]).then(([registerMap, geoJson]) => {
       if (cancelled) return;
       registerMap("japan", geoJson);

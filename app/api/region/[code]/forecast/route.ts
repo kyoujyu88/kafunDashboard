@@ -6,8 +6,9 @@ import { getPrefecture } from "@/lib/regions";
 
 export const revalidate = 1800;
 
-export async function GET(req: NextRequest, ctx: { params: { code: string } }) {
-  const region = getPrefecture(ctx.params.code);
+export async function GET(req: NextRequest, ctx: { params: Promise<{ code: string }> }) {
+  const { code } = await ctx.params;
+  const region = getPrefecture(code);
   if (!region) {
     return NextResponse.json({ error: "Prefecture not found" }, { status: 404 });
   }
