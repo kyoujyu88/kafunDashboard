@@ -1,28 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTheme } from "next-themes";
 import { EChartsWrapper } from "@/components/charts/EChartsWrapper";
-import { ALL_METRIC_KEYS, type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
+import { type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
 import { METRICS, INTENSITY_META } from "@/data/metrics.config";
 import { extractHourlySeries } from "@/lib/openMeteo";
-import { cn } from "@/lib/cn";
 
 interface Props {
   data: OpenMeteoResponse | undefined;
-  defaultMetric?: MetricKey;
+  metric: MetricKey;
 }
 
 const PRESET_COLORS = ["#06b6d4", "#f97316", "#22c55e", "#a855f7", "#ef4444", "#eab308"];
 
-export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
-  const [selected, setSelected] = useState<MetricKey>(defaultMetric);
+export function ForecastChart({ data, metric }: Props) {
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
 
   const option = useMemo(() => {
-    const { time, values } = extractHourlySeries(data, selected);
-    const meta = METRICS[selected];
+    const { time, values } = extractHourlySeries(data, metric);
+    const meta = METRICS[metric];
     const intensityMarks = meta.thresholds;
     const intensityColors = INTENSITY_META;
 
@@ -117,36 +115,27 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
         },
       ],
     };
-  }, [data, selected, dark]);
+  }, [data, metric, dark]);
 
   return (
     <div className="rounded-2xl bg-white/70 p-3 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/60 sm:p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold sm:text-base">予報グラフ(5日間)</h2>
-        <span className="text-xs text-slate-500 dark:text-slate-400">{METRICS[selected].unit}</span>
-      </div>
-
-      <div className="-mx-3 mb-3 flex gap-1 overflow-x-auto px-3 pb-1 snap-x snap-mandatory sm:flex-wrap sm:overflow-visible">
-        {ALL_METRIC_KEYS.map((k) => (
-          <button
-            key={k}
-            onClick={() => setSelected(k)}
-            type="button"
-            className={cn(
-              "shrink-0 snap-start rounded-full px-3 py-1.5 text-xs font-medium transition active:scale-95",
-              selected === k
-                ? "bg-cyan-500 text-white shadow"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            )}
-          >
-            {METRICS[k].shortLabel}
-          </button>
-        ))}
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <h2 className="text-sm font-semibold sm:text-base">
+          予報グラフ
+          <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
+            {METRICS[metric].label}・5日間
+          </span>
+        </h2>
+        <span className="text-xs text-slate-500 dark:text-slate-400">{METRICS[metric].unit}</span>
       </div>
 
       <div className="h-[260px] sm:h-[320px]">
         <EChartsWrapper option={option} notMerge />
       </div>
+
+      <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+        💡 上のカードをタップすると指標を切り替えできます
+      </p>
     </div>
   );
 }

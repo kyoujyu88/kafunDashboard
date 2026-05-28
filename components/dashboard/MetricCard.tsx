@@ -13,24 +13,31 @@ interface Props {
   metric: MetricKey;
   value: number | null;
   highlighted?: boolean;
+  selected?: boolean;
+  onSelect?: (metric: MetricKey) => void;
 }
 
-export function MetricCard({ metric, value, highlighted = false }: Props) {
+export function MetricCard({ metric, value, highlighted = false, selected = false, onSelect }: Props) {
   const meta = METRICS[metric];
   const info = getIntensityInfo(metric, value);
 
   return (
-    <motion.div
+    <motion.button
+      type="button"
+      onClick={() => onSelect?.(metric)}
+      aria-pressed={selected}
+      aria-label={`${meta.label} を予報グラフに表示`}
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-gradient-to-br p-3 shadow-sm ring-1 ring-slate-200/70 transition sm:p-4 dark:ring-slate-700/60",
+        "relative w-full overflow-hidden rounded-2xl bg-gradient-to-br p-3 text-left shadow-sm ring-1 ring-slate-200/70 transition active:scale-[0.98] sm:p-4 dark:ring-slate-700/60",
         info.bgClass,
         highlighted && "ring-2 shadow-lg",
         highlighted && info.ringClass,
+        selected && "ring-2 ring-offset-2 ring-slate-900 dark:ring-slate-100 dark:ring-offset-slate-900 shadow-lg",
       )}
     >
       {highlighted && (
@@ -63,6 +70,6 @@ export function MetricCard({ metric, value, highlighted = false }: Props) {
           {meta.category === "pollen" ? "花粉" : "空気質"}
         </span>
       </div>
-    </motion.div>
+    </motion.button>
   );
 }

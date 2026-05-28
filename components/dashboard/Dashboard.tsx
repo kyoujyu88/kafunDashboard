@@ -49,6 +49,7 @@ export function Dashboard() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState<MetricKey | null>(null);
 
   const isDesktop = useIsDesktop();
 
@@ -65,8 +66,9 @@ export function Dashboard() {
   );
   const hasProfile = highlightKeys.length > 0 && profile.onboarded;
 
-  const defaultChartMetric = highlightKeys[0] ?? "pm2_5";
-  const defaultMapMetric = highlightKeys[0] ?? "pm2_5";
+  const defaultChartMetric: MetricKey = highlightKeys[0] ?? "pm2_5";
+  const defaultMapMetric: MetricKey = highlightKeys[0] ?? "pm2_5";
+  const chartMetric: MetricKey = selectedMetric ?? defaultChartMetric;
 
   const lastUpdated = data?.current?.time ? formatRelative(new Date(data.current.time).getTime()) : null;
 
@@ -118,6 +120,8 @@ export function Dashboard() {
                   isLoading={isLoading || !regionHydrated}
                   regionCode={regionCode}
                   highlightKeys={highlightKeys}
+                  selectedMetric={chartMetric}
+                  onSelectMetric={setSelectedMetric}
                 />
                 <div className="mt-2 sm:mt-3">
                   <RadiationCard regionCode={regionCode} />
@@ -125,7 +129,7 @@ export function Dashboard() {
               </motion.section>
             </AnimatePresence>
 
-            <ForecastChart data={data} defaultMetric={defaultChartMetric} />
+            <ForecastChart data={data} metric={chartMetric} />
 
             <div className="lg:hidden">
               <CollapsibleSection title="全国マップを見る">
