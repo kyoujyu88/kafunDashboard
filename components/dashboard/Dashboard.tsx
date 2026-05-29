@@ -13,6 +13,7 @@ import { WatchAlertBanner } from "@/components/dashboard/WatchAlertBanner";
 import { RadiationCard } from "@/components/dashboard/RadiationCard";
 import { WeatherSummaryCard } from "@/components/dashboard/WeatherSummaryCard";
 import { LifeIndicesCard } from "@/components/dashboard/LifeIndicesCard";
+import { HistoryPanel } from "@/components/dashboard/HistoryPanel";
 import { WatchSettings } from "@/components/settings/WatchSettings";
 import { OnboardingDialog } from "@/components/settings/OnboardingDialog";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -147,6 +148,10 @@ export function Dashboard() {
             </AnimatePresence>
 
             <ForecastChart data={data} weather={weather} metric={chartMetric} />
+
+            <CollapsibleSection title="履歴・トレンドを見る">
+              <HistoryPanel regionCode={regionCode} selectedMetric={chartMetric} />
+            </CollapsibleSection>
 
             <div className="lg:hidden">
               <CollapsibleSection title="全国マップを見る">
