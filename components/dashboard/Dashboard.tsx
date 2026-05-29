@@ -11,10 +11,12 @@ import { RegionSheet } from "@/components/dashboard/RegionSheet";
 import { BetaNotice } from "@/components/dashboard/BetaNotice";
 import { WatchAlertBanner } from "@/components/dashboard/WatchAlertBanner";
 import { RadiationCard } from "@/components/dashboard/RadiationCard";
+import { WeatherSummaryCard } from "@/components/dashboard/WeatherSummaryCard";
 import { WatchSettings } from "@/components/settings/WatchSettings";
 import { OnboardingDialog } from "@/components/settings/OnboardingDialog";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { useAirQuality } from "@/hooks/useAirQuality";
+import { useWeather } from "@/hooks/useWeather";
 import { useWatchAlerts } from "@/hooks/useWatchAlerts";
 import { useWatchProfile } from "@/hooks/useWatchProfile";
 import { useBrowserNotification } from "@/hooks/useBrowserNotification";
@@ -28,6 +30,7 @@ export function Dashboard() {
   const { code: regionCode, setCode: setRegionCode, hydrated: regionHydrated } = usePersistedRegion();
   const region = getPrefecture(regionCode);
   const { data, isLoading } = useAirQuality(region?.lat ?? null, region?.lng ?? null);
+  const { data: weather } = useWeather(regionCode);
 
   const {
     profile,
@@ -93,6 +96,8 @@ export function Dashboard() {
               regionName={region?.name ?? ""}
             />
 
+            <WeatherSummaryCard data={weather} />
+
             <AnimatePresence mode="wait">
               <motion.section
                 key={regionCode}
@@ -129,7 +134,7 @@ export function Dashboard() {
               </motion.section>
             </AnimatePresence>
 
-            <ForecastChart data={data} metric={chartMetric} />
+            <ForecastChart data={data} weather={weather} metric={chartMetric} />
 
             <div className="lg:hidden">
               <CollapsibleSection title="全国マップを見る">
