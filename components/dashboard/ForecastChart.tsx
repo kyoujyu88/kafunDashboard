@@ -1,34 +1,172 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTheme } from "next-themes";
+import type { EChartsOption } from "echarts";
 import { EChartsWrapper } from "@/components/charts/EChartsWrapper";
-import { ALL_METRIC_KEYS, type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
+import { type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
 import { METRICS, INTENSITY_META } from "@/data/metrics.config";
 import { extractHourlySeries } from "@/lib/openMeteo";
-import { cn } from "@/lib/cn";
+import type { WeatherResponse } from "@/lib/weather.types";
 
 interface Props {
   data: OpenMeteoResponse | undefined;
-  defaultMetric?: MetricKey;
+  weather?: WeatherResponse;
+  metric: MetricKey;
 }
 
 const PRESET_COLORS = ["#06b6d4", "#f97316", "#22c55e", "#a855f7", "#ef4444", "#eab308"];
 
-export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
-  const [selected, setSelected] = useState<MetricKey>(defaultMetric);
+const WIND_ARROW_PATH = "path://M12 3 L19 19 L12 15 L5 19 Z";
+
+export function ForecastChart({ data, weather, metric }: Props) {
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
 
   const option = useMemo(() => {
-    const { time, values } = extractHourlySeries(data, selected);
-    const meta = METRICS[selected];
+    const { time, values } = extractHourlySeries(data, metric);
+    const meta = METRICS[metric];
     const intensityMarks = meta.thresholds;
     const intensityColors = INTENSITY_META;
 
-    return {
+    // Align weather data to the air-quality time index by ISO string
+    const precipByTime = new Map<string, number>();
+    const windDirByTime = new Map<string, number>();
+    if (weather?.hourly) {
+      const wt = (weather.hourly.time as string[]) ?? [];
+      const wp = (weather.hourly.precipitation as number[]) ?? [];
+      const wd = (weather.hourly.wind_direction_10m as number[]) ?? [];
+      for (let i = 0; i < wt.length; i++) {
+        if (typeof wp[i] === "number") precipByTime.set(wt[i], wp[i]);
+        if (typeof wd[i] === "number") windDirByTime.set(wt[i], wd[i]);
+      }
+    }
+    const hasWeather = precipByTime.size > 0;
+    const precipAligned = hasWeather ? time.map((t) => precipByTime.get(t) ?? null) : [];
+
+    // Position wind arrows at the top of the line axis, sampled every 6 hours
+    const lineDataMax = Math.max(
+      meta.thresholds.very_high * 1.05,
+      ...values.filter((v): v is number => typeof v === "number"),
+    );
+    const arrowY = lineDataMax * 1.02;
+    const windArrows: Array<{ coord: [string, number]; symbolRotate: number }> = [];
+    if (hasWeather) {
+      for (let i = 0; i < time.length; i += 6) {
+        const t = time[i];
+        const deg = windDirByTime.get(t);
+        if (typeof deg !== "number") continue;
+        windArrows.push({
+          coord: [t, arrowY],
+          symbolRotate: (deg + 180) % 360,
+        });
+      }
+    }
+
+    const yAxes: unknown[] = [
+      {
+        type: "value" as const,
+        axisLabel: { color: dark ? "#94a3b8" : "#64748b", fontSize: 10 },
+        splitLine: { lineStyle: { color: dark ? "#1e293b" : "#e2e8f0" } },
+      },
+    ];
+    if (hasWeather) {
+      yAxes.push({
+        type: "value" as const,
+        position: "right" as const,
+        name: "mm",
+        nameTextStyle: { color: dark ? "#64748b" : "#94a3b8", fontSize: 10, padding: [0, 0, 0, 12] },
+        min: 0,
+        max: (v: { max: number }) => Math.max(Math.ceil(v.max * 1.5), 4),
+        axisLabel: { color: dark ? "#64748b" : "#94a3b8", fontSize: 9 },
+        splitLine: { show: false },
+      });
+    }
+
+    const series: unknown[] = [];
+    if (hasWeather) {
+      series.push({
+        name: "降水",
+        type: "bar" as const,
+        yAxisIndex: 1,
+        z: 1,
+        data: precipAligned,
+        itemStyle: {
+          color: dark ? "rgba(56,189,248,0.45)" : "rgba(14,165,233,0.4)",
+          borderRadius: [2, 2, 0, 0],
+        },
+        barCategoryGap: "30%",
+      });
+    }
+    series.push({
+      name: meta.label,
+      type: "line" as const,
+      yAxisIndex: 0,
+      z: 2,
+      smooth: true,
+      showSymbol: false,
+      data: values,
+      lineStyle: { width: 2.5, color: PRESET_COLORS[0] },
+      areaStyle: {
+        color: {
+          type: "linear" as const,
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: dark ? "rgba(6,182,212,0.35)" : "rgba(6,182,212,0.4)" },
+            { offset: 1, color: "rgba(6,182,212,0.0)" },
+          ],
+        },
+      },
+      markLine: {
+        silent: true,
+        symbol: "none",
+        label: { show: false },
+        data: [
+          {
+            yAxis: intensityMarks.moderate,
+            lineStyle: { color: intensityColors.moderate.colorHex, type: "dashed" as const, width: 1.5 },
+          },
+          {
+            yAxis: intensityMarks.high,
+            lineStyle: { color: intensityColors.high.colorHex, type: "dashed" as const, width: 1.5 },
+          },
+          {
+            yAxis: intensityMarks.very_high,
+            lineStyle: { color: intensityColors.very_high.colorHex, type: "dashed" as const, width: 1.5 },
+          },
+        ],
+      },
+    });
+    if (windArrows.length > 0) {
+      series.push({
+        name: "風向",
+        type: "scatter" as const,
+        yAxisIndex: 0,
+        z: 3,
+        symbol: WIND_ARROW_PATH,
+        symbolSize: 11,
+        data: windArrows.map((a) => ({
+          value: a.coord,
+          symbolRotate: a.symbolRotate,
+        })),
+        itemStyle: { color: dark ? "#94a3b8" : "#475569" },
+        tooltip: { show: false },
+        silent: true,
+      });
+    }
+
+    const opt = {
       animationDuration: 400,
-      grid: { left: 48, right: 12, top: 30, bottom: 64, containLabel: false },
+      grid: {
+        left: 48,
+        right: hasWeather ? 36 : 12,
+        top: 30,
+        bottom: 64,
+        containLabel: false,
+      },
       tooltip: {
         trigger: "axis" as const,
         backgroundColor: dark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.95)",
@@ -54,11 +192,7 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
         },
         axisLine: { lineStyle: { color: dark ? "#475569" : "#cbd5e1" } },
       },
-      yAxis: {
-        type: "value" as const,
-        axisLabel: { color: dark ? "#94a3b8" : "#64748b", fontSize: 10 },
-        splitLine: { lineStyle: { color: dark ? "#1e293b" : "#e2e8f0" } },
-      },
+      yAxis: yAxes,
       dataZoom: [
         { type: "inside" as const, throttle: 50 },
         {
@@ -74,79 +208,30 @@ export function ForecastChart({ data, defaultMetric = "pm2_5" }: Props) {
           showDetail: false,
         },
       ],
-      series: [
-        {
-          name: meta.label,
-          type: "line" as const,
-          smooth: true,
-          showSymbol: false,
-          data: values,
-          lineStyle: { width: 2.5, color: PRESET_COLORS[0] },
-          areaStyle: {
-            color: {
-              type: "linear" as const,
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [
-                { offset: 0, color: dark ? "rgba(6,182,212,0.35)" : "rgba(6,182,212,0.4)" },
-                { offset: 1, color: "rgba(6,182,212,0.0)" },
-              ],
-            },
-          },
-          markLine: {
-            silent: true,
-            symbol: "none",
-            label: { show: false },
-            data: [
-              {
-                yAxis: intensityMarks.moderate,
-                lineStyle: { color: intensityColors.moderate.colorHex, type: "dashed" as const, width: 1.5 },
-              },
-              {
-                yAxis: intensityMarks.high,
-                lineStyle: { color: intensityColors.high.colorHex, type: "dashed" as const, width: 1.5 },
-              },
-              {
-                yAxis: intensityMarks.very_high,
-                lineStyle: { color: intensityColors.very_high.colorHex, type: "dashed" as const, width: 1.5 },
-              },
-            ],
-          },
-        },
-      ],
+      series,
     };
-  }, [data, selected, dark]);
+    return opt as EChartsOption;
+  }, [data, metric, dark, weather]);
 
   return (
     <div className="rounded-2xl bg-white/70 p-3 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/60 sm:p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold sm:text-base">予報グラフ(5日間)</h2>
-        <span className="text-xs text-slate-500 dark:text-slate-400">{METRICS[selected].unit}</span>
-      </div>
-
-      <div className="-mx-3 mb-3 flex gap-1 overflow-x-auto px-3 pb-1 snap-x snap-mandatory sm:flex-wrap sm:overflow-visible">
-        {ALL_METRIC_KEYS.map((k) => (
-          <button
-            key={k}
-            onClick={() => setSelected(k)}
-            type="button"
-            className={cn(
-              "shrink-0 snap-start rounded-full px-3 py-1.5 text-xs font-medium transition active:scale-95",
-              selected === k
-                ? "bg-cyan-500 text-white shadow"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            )}
-          >
-            {METRICS[k].shortLabel}
-          </button>
-        ))}
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <h2 className="text-sm font-semibold sm:text-base">
+          予報グラフ
+          <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
+            {METRICS[metric].label}・5日間
+          </span>
+        </h2>
+        <span className="text-xs text-slate-500 dark:text-slate-400">{METRICS[metric].unit}</span>
       </div>
 
       <div className="h-[260px] sm:h-[320px]">
         <EChartsWrapper option={option} notMerge />
       </div>
+
+      <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+        💡 上のカードをタップすると指標を切り替えできます{weather ? "・薄い水色のバーは降水量、上部の矢印は風が吹く向き" : ""}
+      </p>
     </div>
   );
 }

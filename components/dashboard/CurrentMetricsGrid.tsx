@@ -11,9 +11,11 @@ interface Props {
   isLoading: boolean;
   regionCode: string;
   highlightKeys: MetricKey[];
+  selectedMetric?: MetricKey;
+  onSelectMetric?: (metric: MetricKey) => void;
 }
 
-export function CurrentMetricsGrid({ data, isLoading, regionCode, highlightKeys }: Props) {
+export function CurrentMetricsGrid({ data, isLoading, regionCode, highlightKeys, selectedMetric, onSelectMetric }: Props) {
   if (isLoading || !data) {
     return (
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
@@ -49,6 +51,8 @@ export function CurrentMetricsGrid({ data, isLoading, regionCode, highlightKeys 
             metric={key}
             value={extractCurrentValue(data, key)}
             highlighted={highlightSet.has(key)}
+            selected={selectedMetric === key}
+            onSelect={onSelectMetric}
           />
         ))}
       </motion.div>

@@ -11,15 +11,20 @@ import { RegionSheet } from "@/components/dashboard/RegionSheet";
 import { BetaNotice } from "@/components/dashboard/BetaNotice";
 import { WatchAlertBanner } from "@/components/dashboard/WatchAlertBanner";
 import { RadiationCard } from "@/components/dashboard/RadiationCard";
+import { WeatherSummaryCard } from "@/components/dashboard/WeatherSummaryCard";
+import { LifeIndicesCard } from "@/components/dashboard/LifeIndicesCard";
+import { HistoryPanel } from "@/components/dashboard/HistoryPanel";
 import { WatchSettings } from "@/components/settings/WatchSettings";
 import { OnboardingDialog } from "@/components/settings/OnboardingDialog";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { useAirQuality } from "@/hooks/useAirQuality";
+import { useWeather } from "@/hooks/useWeather";
 import { useWatchAlerts } from "@/hooks/useWatchAlerts";
 import { useWatchProfile } from "@/hooks/useWatchProfile";
 import { useBrowserNotification } from "@/hooks/useBrowserNotification";
 import { usePersistedRegion } from "@/hooks/usePersistedRegion";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
+import { computeLifeIndices } from "@/lib/lifeIndex";
 import { getPrefecture } from "@/lib/regions";
 import { formatRelative } from "@/lib/format";
 import type { MetricKey } from "@/lib/openMeteo.types";
@@ -28,6 +33,7 @@ export function Dashboard() {
   const { code: regionCode, setCode: setRegionCode, hydrated: regionHydrated } = usePersistedRegion();
   const region = getPrefecture(regionCode);
   const { data, isLoading } = useAirQuality(region?.lat ?? null, region?.lng ?? null);
+  const { data: weather } = useWeather(regionCode);
 
   const {
     profile,
@@ -49,6 +55,7 @@ export function Dashboard() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState<MetricKey | null>(null);
 
   const isDesktop = useIsDesktop();
 
@@ -65,8 +72,14 @@ export function Dashboard() {
   );
   const hasProfile = highlightKeys.length > 0 && profile.onboarded;
 
-  const defaultChartMetric = highlightKeys[0] ?? "pm2_5";
-  const defaultMapMetric = highlightKeys[0] ?? "pm2_5";
+  const lifeIndices = useMemo(
+    () => computeLifeIndices({ air: data, weather, profile }),
+    [data, weather, profile]
+  );
+
+  const defaultChartMetric: MetricKey = highlightKeys[0] ?? "pm2_5";
+  const defaultMapMetric: MetricKey = highlightKeys[0] ?? "pm2_5";
+  const chartMetric: MetricKey = selectedMetric ?? defaultChartMetric;
 
   const lastUpdated = data?.current?.time ? formatRelative(new Date(data.current.time).getTime()) : null;
 
@@ -90,6 +103,8 @@ export function Dashboard() {
               hasProfile={hasProfile}
               regionName={region?.name ?? ""}
             />
+
+            <WeatherSummaryCard data={weather} />
 
             <AnimatePresence mode="wait">
               <motion.section
@@ -118,14 +133,25 @@ export function Dashboard() {
                   isLoading={isLoading || !regionHydrated}
                   regionCode={regionCode}
                   highlightKeys={highlightKeys}
+                  selectedMetric={chartMetric}
+                  onSelectMetric={setSelectedMetric}
                 />
+                {lifeIndices.length > 0 && (
+                  <div className="mt-2 sm:mt-3">
+                    <LifeIndicesCard indices={lifeIndices} />
+                  </div>
+                )}
                 <div className="mt-2 sm:mt-3">
                   <RadiationCard regionCode={regionCode} />
                 </div>
               </motion.section>
             </AnimatePresence>
 
-            <ForecastChart data={data} defaultMetric={defaultChartMetric} />
+            <ForecastChart data={data} weather={weather} metric={chartMetric} />
+
+            <CollapsibleSection title="履歴・トレンドを見る">
+              <HistoryPanel regionCode={regionCode} selectedMetric={chartMetric} />
+            </CollapsibleSection>
 
             <div className="lg:hidden">
               <CollapsibleSection title="全国マップを見る">
