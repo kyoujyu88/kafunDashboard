@@ -12,6 +12,7 @@ import { BetaNotice } from "@/components/dashboard/BetaNotice";
 import { WatchAlertBanner } from "@/components/dashboard/WatchAlertBanner";
 import { RadiationCard } from "@/components/dashboard/RadiationCard";
 import { WeatherSummaryCard } from "@/components/dashboard/WeatherSummaryCard";
+import { LifeIndicesCard } from "@/components/dashboard/LifeIndicesCard";
 import { WatchSettings } from "@/components/settings/WatchSettings";
 import { OnboardingDialog } from "@/components/settings/OnboardingDialog";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -22,6 +23,7 @@ import { useWatchProfile } from "@/hooks/useWatchProfile";
 import { useBrowserNotification } from "@/hooks/useBrowserNotification";
 import { usePersistedRegion } from "@/hooks/usePersistedRegion";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
+import { computeLifeIndices } from "@/lib/lifeIndex";
 import { getPrefecture } from "@/lib/regions";
 import { formatRelative } from "@/lib/format";
 import type { MetricKey } from "@/lib/openMeteo.types";
@@ -68,6 +70,11 @@ export function Dashboard() {
     [profile.pollens, profile.airQuality]
   );
   const hasProfile = highlightKeys.length > 0 && profile.onboarded;
+
+  const lifeIndices = useMemo(
+    () => computeLifeIndices({ air: data, weather, profile }),
+    [data, weather, profile]
+  );
 
   const defaultChartMetric: MetricKey = highlightKeys[0] ?? "pm2_5";
   const defaultMapMetric: MetricKey = highlightKeys[0] ?? "pm2_5";
@@ -128,6 +135,11 @@ export function Dashboard() {
                   selectedMetric={chartMetric}
                   onSelectMetric={setSelectedMetric}
                 />
+                {lifeIndices.length > 0 && (
+                  <div className="mt-2 sm:mt-3">
+                    <LifeIndicesCard indices={lifeIndices} />
+                  </div>
+                )}
                 <div className="mt-2 sm:mt-3">
                   <RadiationCard regionCode={regionCode} />
                 </div>
