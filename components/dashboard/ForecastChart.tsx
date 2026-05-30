@@ -8,6 +8,7 @@ import { type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
 import { METRICS, INTENSITY_META } from "@/data/metrics.config";
 import { extractHourlySeries } from "@/lib/openMeteo";
 import type { WeatherResponse } from "@/lib/weather.types";
+import { WindLane } from "./WindLane";
 
 interface Props {
   data: OpenMeteoResponse | undefined;
@@ -16,8 +17,6 @@ interface Props {
 }
 
 const PRESET_COLORS = ["#06b6d4", "#f97316", "#22c55e", "#a855f7", "#ef4444", "#eab308"];
-
-const WIND_ARROW_PATH = "path://M12 3 L19 19 L12 15 L5 19 Z";
 
 export function ForecastChart({ data, weather, metric }: Props) {
   const { resolvedTheme } = useTheme();
@@ -29,39 +28,17 @@ export function ForecastChart({ data, weather, metric }: Props) {
     const intensityMarks = meta.thresholds;
     const intensityColors = INTENSITY_META;
 
-    // Align weather data to the air-quality time index by ISO string
+    // Align precipitation to the air-quality time index by ISO string
     const precipByTime = new Map<string, number>();
-    const windDirByTime = new Map<string, number>();
     if (weather?.hourly) {
       const wt = (weather.hourly.time as string[]) ?? [];
       const wp = (weather.hourly.precipitation as number[]) ?? [];
-      const wd = (weather.hourly.wind_direction_10m as number[]) ?? [];
       for (let i = 0; i < wt.length; i++) {
         if (typeof wp[i] === "number") precipByTime.set(wt[i], wp[i]);
-        if (typeof wd[i] === "number") windDirByTime.set(wt[i], wd[i]);
       }
     }
     const hasWeather = precipByTime.size > 0;
     const precipAligned = hasWeather ? time.map((t) => precipByTime.get(t) ?? null) : [];
-
-    // Position wind arrows at the top of the line axis, sampled every 6 hours
-    const lineDataMax = Math.max(
-      meta.thresholds.very_high * 1.05,
-      ...values.filter((v): v is number => typeof v === "number"),
-    );
-    const arrowY = lineDataMax * 1.02;
-    const windArrows: Array<{ coord: [string, number]; symbolRotate: number }> = [];
-    if (hasWeather) {
-      for (let i = 0; i < time.length; i += 6) {
-        const t = time[i];
-        const deg = windDirByTime.get(t);
-        if (typeof deg !== "number") continue;
-        windArrows.push({
-          coord: [t, arrowY],
-          symbolRotate: (deg + 180) % 360,
-        });
-      }
-    }
 
     const yAxes: unknown[] = [
       {
@@ -140,23 +117,6 @@ export function ForecastChart({ data, weather, metric }: Props) {
         ],
       },
     });
-    if (windArrows.length > 0) {
-      series.push({
-        name: "風向",
-        type: "scatter" as const,
-        yAxisIndex: 0,
-        z: 3,
-        symbol: WIND_ARROW_PATH,
-        symbolSize: 11,
-        data: windArrows.map((a) => ({
-          value: a.coord,
-          symbolRotate: a.symbolRotate,
-        })),
-        itemStyle: { color: dark ? "#94a3b8" : "#475569" },
-        tooltip: { show: false },
-        silent: true,
-      });
-    }
 
     const opt = {
       animationDuration: 400,
@@ -229,8 +189,14 @@ export function ForecastChart({ data, weather, metric }: Props) {
         <EChartsWrapper option={option} notMerge />
       </div>
 
+      {weather && (
+        <div className="mt-1 border-t border-slate-200/60 pt-2 dark:border-slate-700/50">
+          <WindLane weather={weather} />
+        </div>
+      )}
+
       <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-        💡 上のカードをタップすると指標を切り替えできます{weather ? "・薄い水色のバーは降水量、上部の矢印は風が吹く向き" : ""}
+        💡 上のカードをタップすると指標を切り替えできます{weather ? "・薄い水色のバーは降水量、矢印は風が吹く向きで色は風の強さ" : ""}
       </p>
     </div>
   );
