@@ -62,11 +62,11 @@ export function ForecastChart({ data, weather, metric }: Props) {
       yAxes.push({
         type: "value" as const,
         position: "right" as const,
-        name: "mm",
-        nameTextStyle: { color: dark ? "#64748b" : "#94a3b8", fontSize: 10, padding: [0, 0, 0, 12] },
+        name: "降水 mm",
+        nameTextStyle: { color: dark ? "#7dd3fc" : "#0284c7", fontSize: 10, padding: [0, 0, 0, 12] },
         min: 0,
         max: (v: { max: number }) => Math.max(Math.ceil(v.max * 1.5), 4),
-        axisLabel: { color: dark ? "#64748b" : "#94a3b8", fontSize: 9 },
+        axisLabel: { color: dark ? "#7dd3fc" : "#0284c7", fontSize: 9 },
         splitLine: { show: false },
       });
     }
@@ -134,10 +134,23 @@ export function ForecastChart({ data, weather, metric }: Props) {
       grid: {
         left: 48,
         right: hasWeather ? 36 : 12,
-        top: 18,
+        top: hasWeather ? 28 : 18,
         bottom: 36,
         containLabel: false,
       },
+      legend: hasWeather
+        ? {
+            data: [
+              { name: meta.label, icon: "roundRect" as const },
+              { name: "降水量", icon: "roundRect" as const },
+            ],
+            top: 2,
+            right: 8,
+            itemWidth: 10,
+            itemHeight: 10,
+            textStyle: { color: dark ? "#cbd5e1" : "#475569", fontSize: 10 },
+          }
+        : { show: false },
       tooltip: {
         trigger: "axis" as const,
         backgroundColor: dark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.95)",
@@ -205,7 +218,7 @@ export function ForecastChart({ data, weather, metric }: Props) {
       )}
 
       <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-        💡 上のカードをタップすると指標を切り替えできます{weather ? "・薄い水色のバーは降水量、矢印は風が吹く向きで色は風の強さ" : ""}
+        💡 上のカードをタップすると指標を切り替えできます{weather ? "・下の矢印は風向、色は風速" : ""}
       </p>
     </div>
   );
