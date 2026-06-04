@@ -22,10 +22,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ code: strin
 
   try {
     if (compare === "yoy") {
+      // YoY uses explicit dates because past_days is capped at 92.
+      // Pollen values may be null in this mode (CAMS archive doesn't replay pollen).
       const yoyEnd = jstDateAddDays(endDate, -365);
       const yoyStart = jstDateAddDays(startDate, -365);
       const [current, previousYear] = await Promise.all([
-        fetchAirQualityHistory(region.lat, region.lng, { startDate, endDate }),
+        fetchAirQualityHistory(region.lat, region.lng, { pastDays: days }),
         fetchAirQualityHistory(region.lat, region.lng, { startDate: yoyStart, endDate: yoyEnd }),
       ]);
       return NextResponse.json(
@@ -39,7 +41,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ code: strin
       );
     }
 
-    const current = await fetchAirQualityHistory(region.lat, region.lng, { startDate, endDate });
+    const current = await fetchAirQualityHistory(region.lat, region.lng, { pastDays: days });
     return NextResponse.json(
       { current, range: { startDate, endDate } },
       {

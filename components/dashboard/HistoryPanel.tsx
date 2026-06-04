@@ -77,7 +77,7 @@ export function HistoryPanel({ regionCode, selectedMetric }: Props) {
 
       <Tabs.Content value="calendar" className="mt-3 focus:outline-none">
         <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
-          直近1年の月別平均(grains/m³)
+          直近3ヶ月の月別平均(grains/m³)・最近の飛散傾向を月単位で表示
         </p>
         {calendar.isLoading || !calendar.data ? (
           <Skeleton className="h-[200px] rounded-xl" />
