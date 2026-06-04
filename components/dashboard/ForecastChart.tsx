@@ -62,8 +62,6 @@ export function ForecastChart({ data, weather, metric }: Props) {
       yAxes.push({
         type: "value" as const,
         position: "right" as const,
-        name: "降水 mm",
-        nameTextStyle: { color: dark ? "#7dd3fc" : "#0284c7", fontSize: 10, padding: [0, 0, 0, 12] },
         min: 0,
         max: (v: { max: number }) => Math.max(Math.ceil(v.max * 1.5), 4),
         axisLabel: { color: dark ? "#7dd3fc" : "#0284c7", fontSize: 9 },
@@ -133,24 +131,11 @@ export function ForecastChart({ data, weather, metric }: Props) {
       animationDuration: 400,
       grid: {
         left: 48,
-        right: hasWeather ? 36 : 12,
-        top: hasWeather ? 28 : 18,
+        right: hasWeather ? 42 : 12,
+        top: 22,
         bottom: 36,
         containLabel: false,
       },
-      legend: hasWeather
-        ? {
-            data: [
-              { name: meta.label, icon: "roundRect" as const },
-              { name: "降水量", icon: "roundRect" as const },
-            ],
-            top: 2,
-            right: 8,
-            itemWidth: 10,
-            itemHeight: 10,
-            textStyle: { color: dark ? "#cbd5e1" : "#475569", fontSize: 10 },
-          }
-        : { show: false },
       tooltip: {
         trigger: "axis" as const,
         backgroundColor: dark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.95)",
@@ -196,7 +181,7 @@ export function ForecastChart({ data, weather, metric }: Props) {
 
   return (
     <div className="rounded-2xl bg-white/70 p-3 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/60 sm:p-4">
-      <div className="mb-3 flex items-baseline justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2 className="text-sm font-semibold sm:text-base">
           予報グラフ
           <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
@@ -204,7 +189,18 @@ export function ForecastChart({ data, weather, metric }: Props) {
             {dateRange && <span className="ml-1">・{dateRange} (5日間)</span>}
           </span>
         </h2>
-        <span className="text-xs text-slate-500 dark:text-slate-400">{METRICS[metric].unit}</span>
+        <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block h-2 w-2 rounded-sm" style={{ background: "#06b6d4" }} aria-hidden />
+            {METRICS[metric].unit || METRICS[metric].shortLabel}
+          </span>
+          {weather && (
+            <span className="inline-flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-sm bg-sky-400/70" aria-hidden />
+              降水 mm
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="h-[260px] sm:h-[320px]">
