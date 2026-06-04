@@ -18,9 +18,20 @@ interface Props {
 
 const PRESET_COLORS = ["#06b6d4", "#f97316", "#22c55e", "#a855f7", "#ef4444", "#eab308"];
 
+const WEEKDAYS_JP = ["日", "月", "火", "水", "木", "金", "土"];
+
+function formatDateRange(time: string[]): string {
+  if (time.length === 0) return "";
+  const first = new Date(time[0]);
+  const last = new Date(time[time.length - 1]);
+  const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+  return `${fmt(first)} – ${fmt(last)}`;
+}
+
 export function ForecastChart({ data, weather, metric }: Props) {
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
+  const dateRange = formatDateRange(extractHourlySeries(data, metric).time);
 
   const option = useMemo(() => {
     const { time, values } = extractHourlySeries(data, metric);
@@ -123,8 +134,8 @@ export function ForecastChart({ data, weather, metric }: Props) {
       grid: {
         left: 48,
         right: hasWeather ? 36 : 12,
-        top: 30,
-        bottom: 64,
+        top: 18,
+        bottom: 36,
         containLabel: false,
       },
       tooltip: {
@@ -138,36 +149,33 @@ export function ForecastChart({ data, weather, metric }: Props) {
         type: "category" as const,
         data: time,
         axisLabel: {
-          color: dark ? "#94a3b8" : "#64748b",
+          color: dark ? "#cbd5e1" : "#475569",
           fontSize: 10,
           margin: 10,
+          interval: (_idx: number, value: string) => {
+            // Label only at noon of each day → 5 evenly spaced major ticks for a 5-day forecast.
+            return new Date(value).getHours() === 12;
+          },
           formatter: (value: string) => {
             const d = new Date(value);
-            const h = d.getHours();
-            if (h === 0) return `${d.getMonth() + 1}/${d.getDate()}\n0:00`;
-            if (h % 6 === 0) return `${h}:00`;
-            return "";
+            const day = WEEKDAYS_JP[d.getDay()];
+            return `${d.getMonth() + 1}/${d.getDate()}\n(${day})`;
           },
-          hideOverlap: true,
+        },
+        axisTick: {
+          alignWithLabel: false,
+          interval: (_idx: number, value: string) => new Date(value).getHours() === 0,
+          lineStyle: { color: dark ? "#475569" : "#cbd5e1" },
+        },
+        splitLine: {
+          show: true,
+          interval: (_idx: number, value: string) => new Date(value).getHours() === 0,
+          lineStyle: { color: dark ? "#334155" : "#e2e8f0", type: "dashed" as const },
         },
         axisLine: { lineStyle: { color: dark ? "#475569" : "#cbd5e1" } },
       },
       yAxis: yAxes,
-      dataZoom: [
-        { type: "inside" as const, throttle: 50 },
-        {
-          type: "slider" as const,
-          height: 20,
-          bottom: 8,
-          borderColor: "transparent",
-          backgroundColor: dark ? "#1e293b" : "#f1f5f9",
-          fillerColor: dark ? "#334155" : "#cbd5e1",
-          handleStyle: { color: dark ? "#64748b" : "#94a3b8" },
-          moveHandleStyle: { color: dark ? "#475569" : "#cbd5e1" },
-          dataBackground: { lineStyle: { color: dark ? "#334155" : "#cbd5e1" }, areaStyle: { color: dark ? "#1e293b" : "#f1f5f9" } },
-          showDetail: false,
-        },
-      ],
+      dataZoom: [{ type: "inside" as const, throttle: 50 }],
       series,
     };
     return opt as EChartsOption;
@@ -179,7 +187,8 @@ export function ForecastChart({ data, weather, metric }: Props) {
         <h2 className="text-sm font-semibold sm:text-base">
           予報グラフ
           <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
-            {METRICS[metric].label}・5日間
+            {METRICS[metric].label}
+            {dateRange && <span className="ml-1">・{dateRange} (5日間)</span>}
           </span>
         </h2>
         <span className="text-xs text-slate-500 dark:text-slate-400">{METRICS[metric].unit}</span>
