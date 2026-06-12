@@ -8,6 +8,7 @@ import { type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
 import { METRICS, INTENSITY_META } from "@/data/metrics.config";
 import { extractHourlySeries } from "@/lib/openMeteo";
 import type { WeatherResponse } from "@/lib/weather.types";
+import { WindLane } from "./WindLane";
 
 interface Props {
   data: OpenMeteoResponse | undefined;
@@ -17,11 +18,20 @@ interface Props {
 
 const PRESET_COLORS = ["#06b6d4", "#f97316", "#22c55e", "#a855f7", "#ef4444", "#eab308"];
 
-const WIND_ARROW_PATH = "path://M12 3 L19 19 L12 15 L5 19 Z";
+const WEEKDAYS_JP = ["日", "月", "火", "水", "木", "金", "土"];
+
+function formatDateRange(time: string[]): string {
+  if (time.length === 0) return "";
+  const first = new Date(time[0]);
+  const last = new Date(time[time.length - 1]);
+  const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+  return `${fmt(first)} – ${fmt(last)}`;
+}
 
 export function ForecastChart({ data, weather, metric }: Props) {
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
+  const dateRange = formatDateRange(extractHourlySeries(data, metric).time);
 
   const option = useMemo(() => {
     const { time, values } = extractHourlySeries(data, metric);
@@ -29,39 +39,17 @@ export function ForecastChart({ data, weather, metric }: Props) {
     const intensityMarks = meta.thresholds;
     const intensityColors = INTENSITY_META;
 
-    // Align weather data to the air-quality time index by ISO string
+    // Align precipitation to the air-quality time index by ISO string
     const precipByTime = new Map<string, number>();
-    const windDirByTime = new Map<string, number>();
     if (weather?.hourly) {
       const wt = (weather.hourly.time as string[]) ?? [];
       const wp = (weather.hourly.precipitation as number[]) ?? [];
-      const wd = (weather.hourly.wind_direction_10m as number[]) ?? [];
       for (let i = 0; i < wt.length; i++) {
         if (typeof wp[i] === "number") precipByTime.set(wt[i], wp[i]);
-        if (typeof wd[i] === "number") windDirByTime.set(wt[i], wd[i]);
       }
     }
     const hasWeather = precipByTime.size > 0;
     const precipAligned = hasWeather ? time.map((t) => precipByTime.get(t) ?? null) : [];
-
-    // Position wind arrows at the top of the line axis, sampled every 6 hours
-    const lineDataMax = Math.max(
-      meta.thresholds.very_high * 1.05,
-      ...values.filter((v): v is number => typeof v === "number"),
-    );
-    const arrowY = lineDataMax * 1.02;
-    const windArrows: Array<{ coord: [string, number]; symbolRotate: number }> = [];
-    if (hasWeather) {
-      for (let i = 0; i < time.length; i += 6) {
-        const t = time[i];
-        const deg = windDirByTime.get(t);
-        if (typeof deg !== "number") continue;
-        windArrows.push({
-          coord: [t, arrowY],
-          symbolRotate: (deg + 180) % 360,
-        });
-      }
-    }
 
     const yAxes: unknown[] = [
       {
@@ -74,11 +62,9 @@ export function ForecastChart({ data, weather, metric }: Props) {
       yAxes.push({
         type: "value" as const,
         position: "right" as const,
-        name: "mm",
-        nameTextStyle: { color: dark ? "#64748b" : "#94a3b8", fontSize: 10, padding: [0, 0, 0, 12] },
         min: 0,
         max: (v: { max: number }) => Math.max(Math.ceil(v.max * 1.5), 4),
-        axisLabel: { color: dark ? "#64748b" : "#94a3b8", fontSize: 9 },
+        axisLabel: { color: dark ? "#7dd3fc" : "#0284c7", fontSize: 9 },
         splitLine: { show: false },
       });
     }
@@ -140,31 +126,14 @@ export function ForecastChart({ data, weather, metric }: Props) {
         ],
       },
     });
-    if (windArrows.length > 0) {
-      series.push({
-        name: "風向",
-        type: "scatter" as const,
-        yAxisIndex: 0,
-        z: 3,
-        symbol: WIND_ARROW_PATH,
-        symbolSize: 11,
-        data: windArrows.map((a) => ({
-          value: a.coord,
-          symbolRotate: a.symbolRotate,
-        })),
-        itemStyle: { color: dark ? "#94a3b8" : "#475569" },
-        tooltip: { show: false },
-        silent: true,
-      });
-    }
 
     const opt = {
       animationDuration: 400,
       grid: {
         left: 48,
-        right: hasWeather ? 36 : 12,
-        top: 30,
-        bottom: 64,
+        right: hasWeather ? 42 : 12,
+        top: 22,
+        bottom: 36,
         containLabel: false,
       },
       tooltip: {
@@ -172,42 +141,59 @@ export function ForecastChart({ data, weather, metric }: Props) {
         backgroundColor: dark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.95)",
         borderColor: dark ? "#334155" : "#e2e8f0",
         textStyle: { color: dark ? "#e2e8f0" : "#0f172a" },
-        valueFormatter: (v: unknown) => (typeof v === "number" ? `${v.toFixed(1)} ${meta.unit}` : "—"),
+        // 降水(右軸)は mm、指標(左軸)は meta.unit と単位が異なるため系列ごとに整形する
+        formatter: (params: unknown) => {
+          const items = (Array.isArray(params) ? params : [params]) as {
+            seriesName?: string;
+            axisValue?: string;
+            marker?: string;
+            value?: unknown;
+          }[];
+          if (items.length === 0) return "";
+          const d = new Date(items[0].axisValue ?? "");
+          const header = isNaN(d.getTime())
+            ? ""
+            : `${d.getMonth() + 1}/${d.getDate()} (${WEEKDAYS_JP[d.getDay()]}) ${d.getHours()}時`;
+          const lines = items.map((it) => {
+            const unit = it.seriesName === "降水" ? "mm" : meta.unit;
+            const text =
+              typeof it.value === "number" ? `${it.value.toFixed(1)} ${unit}` : "—";
+            return `${it.marker ?? ""}${it.seriesName ?? ""}&nbsp;&nbsp;<b>${text}</b>`;
+          });
+          return [header, ...lines].filter(Boolean).join("<br/>");
+        },
       },
       xAxis: {
         type: "category" as const,
         data: time,
         axisLabel: {
-          color: dark ? "#94a3b8" : "#64748b",
+          color: dark ? "#cbd5e1" : "#475569",
           fontSize: 10,
           margin: 10,
+          interval: (_idx: number, value: string) => {
+            // Label only at noon of each day → 5 evenly spaced major ticks for a 5-day forecast.
+            return new Date(value).getHours() === 12;
+          },
           formatter: (value: string) => {
             const d = new Date(value);
-            const h = d.getHours();
-            if (h === 0) return `${d.getMonth() + 1}/${d.getDate()}\n0:00`;
-            if (h % 6 === 0) return `${h}:00`;
-            return "";
+            const day = WEEKDAYS_JP[d.getDay()];
+            return `${d.getMonth() + 1}/${d.getDate()}\n(${day})`;
           },
-          hideOverlap: true,
+        },
+        axisTick: {
+          alignWithLabel: false,
+          interval: (_idx: number, value: string) => new Date(value).getHours() === 0,
+          lineStyle: { color: dark ? "#475569" : "#cbd5e1" },
+        },
+        splitLine: {
+          show: true,
+          interval: (_idx: number, value: string) => new Date(value).getHours() === 0,
+          lineStyle: { color: dark ? "#334155" : "#e2e8f0", type: "dashed" as const },
         },
         axisLine: { lineStyle: { color: dark ? "#475569" : "#cbd5e1" } },
       },
       yAxis: yAxes,
-      dataZoom: [
-        { type: "inside" as const, throttle: 50 },
-        {
-          type: "slider" as const,
-          height: 20,
-          bottom: 8,
-          borderColor: "transparent",
-          backgroundColor: dark ? "#1e293b" : "#f1f5f9",
-          fillerColor: dark ? "#334155" : "#cbd5e1",
-          handleStyle: { color: dark ? "#64748b" : "#94a3b8" },
-          moveHandleStyle: { color: dark ? "#475569" : "#cbd5e1" },
-          dataBackground: { lineStyle: { color: dark ? "#334155" : "#cbd5e1" }, areaStyle: { color: dark ? "#1e293b" : "#f1f5f9" } },
-          showDetail: false,
-        },
-      ],
+      dataZoom: [{ type: "inside" as const, throttle: 50 }],
       series,
     };
     return opt as EChartsOption;
@@ -215,22 +201,40 @@ export function ForecastChart({ data, weather, metric }: Props) {
 
   return (
     <div className="rounded-2xl bg-white/70 p-3 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/60 sm:p-4">
-      <div className="mb-3 flex items-baseline justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2 className="text-sm font-semibold sm:text-base">
           予報グラフ
           <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
-            {METRICS[metric].label}・5日間
+            {METRICS[metric].label}
+            {dateRange && <span className="ml-1">・{dateRange} (5日間)</span>}
           </span>
         </h2>
-        <span className="text-xs text-slate-500 dark:text-slate-400">{METRICS[metric].unit}</span>
+        <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-block h-2 w-2 rounded-sm" style={{ background: "#06b6d4" }} aria-hidden />
+            {METRICS[metric].unit || METRICS[metric].shortLabel}
+          </span>
+          {weather && (
+            <span className="inline-flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-sm bg-sky-400/70" aria-hidden />
+              降水 mm
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="h-[260px] sm:h-[320px]">
         <EChartsWrapper option={option} notMerge />
       </div>
 
+      {weather && (
+        <div className="mt-1 border-t border-slate-200/60 pt-2 dark:border-slate-700/50">
+          <WindLane weather={weather} />
+        </div>
+      )}
+
       <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-        💡 上のカードをタップすると指標を切り替えできます{weather ? "・薄い水色のバーは降水量、上部の矢印は風が吹く向き" : ""}
+        💡 上のカードをタップすると指標を切り替えできます{weather ? "・下の矢印は風向、色は風速" : ""}
       </p>
     </div>
   );

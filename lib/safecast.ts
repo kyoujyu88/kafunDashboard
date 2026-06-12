@@ -43,7 +43,8 @@ export async function fetchRadiation(lat: number, lng: number): Promise<Radiatio
   }
 
   values.sort((a, b) => a - b);
-  const median = values[Math.floor(values.length / 2)];
+  const mid = Math.floor(values.length / 2);
+  const median = values.length % 2 === 0 ? (values[mid - 1] + values[mid]) / 2 : values[mid];
 
   return {
     valueMicroSvH: Math.round(median * 10000) / 10000,

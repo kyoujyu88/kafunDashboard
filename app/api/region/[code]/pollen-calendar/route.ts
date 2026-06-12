@@ -19,12 +19,15 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ code: stri
   }
 
   const endDate = todayJst();
-  const startDate = jstDateAddDays(endDate, -365);
+  // Open-Meteo's air-quality past_days is capped at 92, and pollen values are
+  // only returned via past_days mode (start_date/end_date returns null for pollen).
+  // So the "calendar" covers the most recent ~3 months of seasonal data.
+  const PAST_DAYS = 92;
+  const startDate = jstDateAddDays(endDate, -PAST_DAYS);
 
   try {
     const response = await fetchAirQualityHistory(region.lat, region.lng, {
-      startDate,
-      endDate,
+      pastDays: PAST_DAYS,
       hourly: POLLEN_KEYS,
     });
 
