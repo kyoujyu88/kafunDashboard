@@ -141,7 +141,27 @@ export function ForecastChart({ data, weather, metric }: Props) {
         backgroundColor: dark ? "rgba(15,23,42,0.92)" : "rgba(255,255,255,0.95)",
         borderColor: dark ? "#334155" : "#e2e8f0",
         textStyle: { color: dark ? "#e2e8f0" : "#0f172a" },
-        valueFormatter: (v: unknown) => (typeof v === "number" ? `${v.toFixed(1)} ${meta.unit}` : "—"),
+        // 降水(右軸)は mm、指標(左軸)は meta.unit と単位が異なるため系列ごとに整形する
+        formatter: (params: unknown) => {
+          const items = (Array.isArray(params) ? params : [params]) as {
+            seriesName?: string;
+            axisValue?: string;
+            marker?: string;
+            value?: unknown;
+          }[];
+          if (items.length === 0) return "";
+          const d = new Date(items[0].axisValue ?? "");
+          const header = isNaN(d.getTime())
+            ? ""
+            : `${d.getMonth() + 1}/${d.getDate()} (${WEEKDAYS_JP[d.getDay()]}) ${d.getHours()}時`;
+          const lines = items.map((it) => {
+            const unit = it.seriesName === "降水" ? "mm" : meta.unit;
+            const text =
+              typeof it.value === "number" ? `${it.value.toFixed(1)} ${unit}` : "—";
+            return `${it.marker ?? ""}${it.seriesName ?? ""}&nbsp;&nbsp;<b>${text}</b>`;
+          });
+          return [header, ...lines].filter(Boolean).join("<br/>");
+        },
       },
       xAxis: {
         type: "category" as const,
