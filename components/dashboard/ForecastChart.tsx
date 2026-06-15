@@ -9,6 +9,7 @@ import { METRICS, INTENSITY_META } from "@/data/metrics.config";
 import { extractHourlySeries } from "@/lib/openMeteo";
 import type { WeatherResponse } from "@/lib/weather.types";
 import { WindLane } from "./WindLane";
+import { AttributionLine } from "@/components/ui/AttributionLine";
 
 interface Props {
   data: OpenMeteoResponse | undefined;
@@ -216,6 +217,11 @@ export function ForecastChart({ data, weather, metric }: Props) {
       <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
         💡 上のカードをタップすると指標を切り替えできます{weather ? "・下の矢印は風向、色は風速" : ""}
       </p>
+      <AttributionLine
+        className="mt-1"
+        sources={weather ? ["cams_global", "ecmwf"] : ["cams_global"]}
+        note="モデル推計値・1時間ごとに更新"
+      />
     </div>
   );
 }

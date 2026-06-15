@@ -6,6 +6,7 @@ import * as Tabs from "@radix-ui/react-tabs";
 import { useHistory } from "@/hooks/useHistory";
 import { usePollenCalendar } from "@/hooks/usePollenCalendar";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { AttributionLine } from "@/components/ui/AttributionLine";
 import { METRICS } from "@/data/metrics.config";
 import type { MetricKey } from "@/lib/openMeteo.types";
 import { cn } from "@/lib/cn";
@@ -39,6 +40,7 @@ export function HistoryPanel({ regionCode, selectedMetric }: Props) {
   const week = useHistory(tab === "week" ? regionCode : null, { days: 7 });
   const yoy = useHistory(tab === "yoy" ? regionCode : null, { days: 30, compare: "yoy" });
   const calendar = usePollenCalendar(tab === "calendar" ? regionCode : null);
+  const isPollen = METRICS[selectedMetric].category === "pollen";
 
   return (
     <Tabs.Root value={tab} onValueChange={(v) => setTab(v as TabId)}>
@@ -61,6 +63,7 @@ export function HistoryPanel({ regionCode, selectedMetric }: Props) {
         ) : (
           <HistoryChart data={week.data} metric={selectedMetric} />
         )}
+        <AttributionLine className="mt-2" sources={["cams_global"]} note="モデル推計値" />
       </Tabs.Content>
 
       <Tabs.Content value="yoy" className="mt-3 focus:outline-none">
@@ -68,11 +71,18 @@ export function HistoryPanel({ regionCode, selectedMetric }: Props) {
           <span>{METRICS[selectedMetric].label}・今期 vs 前年</span>
           <span>{formatRange(yoy.data?.range)}</span>
         </div>
+        {isPollen && (
+          <p className="mb-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+            ⚠ 花粉指標の前年同期データは CAMS アーカイブに含まれないため、
+            前年(点線)は描画されません。空気質指標(PM2.5など)に切り替えると比較できます
+          </p>
+        )}
         {yoy.isLoading || !yoy.data ? (
           <Skeleton className="h-[220px] rounded-xl sm:h-[260px]" />
         ) : (
           <HistoryChart data={yoy.data} metric={selectedMetric} />
         )}
+        <AttributionLine className="mt-2" sources={["cams_global"]} note="モデル推計値" />
       </Tabs.Content>
 
       <Tabs.Content value="calendar" className="mt-3 focus:outline-none">
@@ -84,6 +94,7 @@ export function HistoryPanel({ regionCode, selectedMetric }: Props) {
         ) : (
           <PollenCalendarHeatmap data={calendar.data} />
         )}
+        <AttributionLine className="mt-2" sources={["cams_global"]} note="モデル推計値" />
       </Tabs.Content>
     </Tabs.Root>
   );
