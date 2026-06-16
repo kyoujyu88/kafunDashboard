@@ -1,4 +1,5 @@
 import { Rss, Code2, Bot, FileText } from "lucide-react";
+import { DATA_SOURCES } from "@/data/dataSources";
 
 const LINKS = [
   { href: "/feed.xml", label: "全国RSS", icon: Rss },
@@ -24,27 +25,53 @@ export function Footer() {
           </a>
         ))}
       </nav>
-      <p>
-        データ提供:{" "}
+      <p className="leading-relaxed">
+        データ提供:
         <a
-          className="underline decoration-dotted"
+          className="mx-1 underline decoration-dotted"
           href="https://open-meteo.com/"
           target="_blank"
           rel="noreferrer"
         >
-          Open-Meteo Air Quality API
-        </a>{" "}
-        /{" "}
+          Open-Meteo
+        </a>
+        (花粉・空気質:{" "}
         <a
           className="underline decoration-dotted"
-          href="https://safecast.org/"
+          href={DATA_SOURCES.cams_global.url}
           target="_blank"
           rel="noreferrer"
+          title={DATA_SOURCES.cams_global.description}
+        >
+          CAMS Global
+        </a>
+        、気象:{" "}
+        <a
+          className="underline decoration-dotted"
+          href={DATA_SOURCES.ecmwf.url}
+          target="_blank"
+          rel="noreferrer"
+          title={DATA_SOURCES.ecmwf.description}
+        >
+          ECMWF
+        </a>
+        ){" "}/{" "}
+        <a
+          className="underline decoration-dotted"
+          href={DATA_SOURCES.safecast.url}
+          target="_blank"
+          rel="noreferrer"
+          title={DATA_SOURCES.safecast.description}
         >
           SAFECAST
-        </a>
+        </a>{" "}
+        (放射線)
       </p>
-      <p className="mt-1">
+      <p className="mt-1 leading-relaxed">
+        花粉値は <strong>grains/m³</strong>(CAMSモデルの予報単位)。
+        日本の実測単位「個/cm²/日」とは異なります。
+      </p>
+      <p className="mt-2">
         本サイトは情報提供のみを目的としています。健康に関する判断は医療従事者にご相談ください。
       </p>
     </footer>

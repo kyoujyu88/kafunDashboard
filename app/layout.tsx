@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { PWARegister } from "@/components/PWARegister";
 import { siteUrl } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ja" suppressHydrationWarning>
       <body>
         <ThemeProvider>{children}</ThemeProvider>
+        <PWARegister />
       </body>
     </html>
   );
