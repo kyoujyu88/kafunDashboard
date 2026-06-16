@@ -24,18 +24,25 @@ import { useFocusMode } from "@/hooks/useFocusMode";
 import { useWatchAlerts } from "@/hooks/useWatchAlerts";
 import { useWatchProfile } from "@/hooks/useWatchProfile";
 import { useBrowserNotification } from "@/hooks/useBrowserNotification";
-import { usePersistedRegion } from "@/hooks/usePersistedRegion";
+import { useLocation } from "@/hooks/useLocation";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
 import { computeLifeIndices } from "@/lib/lifeIndex";
 import { computeHeroSummary } from "@/lib/heroSummary";
-import { getPrefecture } from "@/lib/regions";
 import { formatRelative } from "@/lib/format";
 import type { MetricKey } from "@/lib/openMeteo.types";
 
 export function Dashboard() {
-  const { code: regionCode, setCode: setRegionCode, hydrated: regionHydrated } = usePersistedRegion();
-  const region = getPrefecture(regionCode);
-  const { data, isLoading } = useAirQuality(region?.lat ?? null, region?.lng ?? null);
+  const {
+    location,
+    hydrated: regionHydrated,
+    availableSubRegions,
+    setPrefecture,
+    setSubRegion,
+    setGps,
+    clearGps,
+  } = useLocation();
+  const regionCode = location.prefCode;
+  const { data, isLoading } = useAirQuality(location.lat, location.lng);
   const { data: weather } = useWeather(regionCode);
 
   const {
@@ -52,7 +59,7 @@ export function Dashboard() {
   const { requestPermission } = useBrowserNotification(
     profile.enableBrowserNotification,
     alerts,
-    region?.name ?? ""
+    location.label
   );
 
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -95,9 +102,12 @@ export function Dashboard() {
   return (
     <>
       <Header
-        regionName={region?.name ?? "—"}
+        regionName={location.label}
+        regionSublabel={location.sublabel}
+        fromGps={location.fromGps}
         onOpenRegion={() => setSheetOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onUseGps={() => requestGpsLocation(setGps)}
         lastUpdated={lastUpdated}
       />
 
@@ -110,7 +120,7 @@ export function Dashboard() {
               alerts={alerts}
               highestLevel={highestLevel}
               hasProfile={hasProfile}
-              regionName={region?.name ?? ""}
+              regionName={location.label}
             />
 
             <HeroSummaryCard summary={heroSummary} onSelectMetric={setSelectedMetric} />
@@ -128,9 +138,9 @@ export function Dashboard() {
               >
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <h2 className="text-base font-semibold sm:text-lg">
-                    {region?.name}
+                    {location.label}
                     <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
-                      {region?.capital}
+                      {location.sublabel}
                     </span>
                   </h2>
                   {hasProfile && (
@@ -178,7 +188,7 @@ export function Dashboard() {
               <CollapsibleSection title="全国マップを見る">
                 <JapanHeatmap
                   selectedCode={regionCode}
-                  onSelect={setRegionCode}
+                  onSelect={setPrefecture}
                   defaultMetric={defaultMapMetric}
                 />
               </CollapsibleSection>
@@ -188,7 +198,7 @@ export function Dashboard() {
           <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
             <JapanHeatmap
               selectedCode={regionCode}
-              onSelect={setRegionCode}
+              onSelect={setPrefecture}
               defaultMetric={defaultMapMetric}
             />
           </aside>
@@ -200,8 +210,14 @@ export function Dashboard() {
       <RegionSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        currentCode={regionCode}
-        onSelect={setRegionCode}
+        currentPrefCode={regionCode}
+        currentSubKey={location.subKey}
+        availableSubRegions={availableSubRegions}
+        onSelectPrefecture={setPrefecture}
+        onSelectSubRegion={setSubRegion}
+        onUseGps={(lat, lng, label) => setGps(lat, lng, label)}
+        onClearGps={clearGps}
+        fromGps={location.fromGps}
       />
 
       <WatchSettings
@@ -224,5 +240,32 @@ export function Dashboard() {
       {/* avoid unused warning for isDesktop in future, kept for SSR-aware layouts */}
       <span className="hidden">{String(isDesktop)}</span>
     </>
+  );
+}
+
+/**
+ * Trigger the browser's Geolocation prompt and hand the resulting coordinates
+ * to `setGps`. We deliberately keep the label as "現在地" — reverse geocoding
+ * would require an external service for a small UX win.
+ */
+function requestGpsLocation(
+  setGps: (lat: number, lng: number, label?: string) => void
+) {
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    alert("お使いのブラウザは現在地の取得に対応していません");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      setGps(pos.coords.latitude, pos.coords.longitude, "現在地");
+    },
+    (err) => {
+      const msg =
+        err.code === err.PERMISSION_DENIED
+          ? "位置情報の利用が許可されていません。ブラウザ設定をご確認ください"
+          : "現在地を取得できませんでした";
+      alert(msg);
+    },
+    { timeout: 10000, enableHighAccuracy: false }
   );
 }

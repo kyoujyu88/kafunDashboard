@@ -1,0 +1,142 @@
+{
+  "01": [
+    { "key": "sapporo", "name": "札幌", "lat": 43.0642, "lng": 141.3469 },
+    { "key": "hakodate", "name": "函館", "lat": 41.7687, "lng": 140.7288 },
+    { "key": "asahikawa", "name": "旭川", "lat": 43.7706, "lng": 142.365 },
+    { "key": "kushiro", "name": "釧路", "lat": 42.9849, "lng": 144.3818 },
+    { "key": "obihiro", "name": "帯広", "lat": 42.9237, "lng": 143.1965 },
+    { "key": "kitami", "name": "北見", "lat": 43.8038, "lng": 143.8902 },
+    { "key": "wakkanai", "name": "稚内", "lat": 45.4156, "lng": 141.6731 },
+    { "key": "muroran", "name": "室蘭", "lat": 42.3151, "lng": 140.9737 }
+  ],
+  "02": [
+    { "key": "aomori", "name": "青森", "lat": 40.8244, "lng": 140.7400 },
+    { "key": "hachinohe", "name": "八戸", "lat": 40.5121, "lng": 141.4884 },
+    { "key": "hirosaki", "name": "弘前", "lat": 40.6033, "lng": 140.4644 }
+  ],
+  "03": [
+    { "key": "morioka", "name": "盛岡", "lat": 39.7036, "lng": 141.1527 },
+    { "key": "miyako", "name": "宮古", "lat": 39.6411, "lng": 141.9568 },
+    { "key": "ichinoseki", "name": "一関", "lat": 38.9357, "lng": 141.1272 }
+  ],
+  "04": [
+    { "key": "sendai", "name": "仙台", "lat": 38.2682, "lng": 140.8694 },
+    { "key": "ishinomaki", "name": "石巻", "lat": 38.4346, "lng": 141.3027 }
+  ],
+  "07": [
+    { "key": "fukushima", "name": "福島", "lat": 37.7503, "lng": 140.4676 },
+    { "key": "koriyama", "name": "郡山", "lat": 37.4002, "lng": 140.3597 },
+    { "key": "iwaki", "name": "いわき", "lat": 36.9442, "lng": 140.8896 },
+    { "key": "aizuwakamatsu", "name": "会津若松", "lat": 37.4949, "lng": 139.9296 }
+  ],
+  "08": [
+    { "key": "mito", "name": "水戸", "lat": 36.3418, "lng": 140.4468 },
+    { "key": "tsukuba", "name": "つくば", "lat": 36.0835, "lng": 140.0764 },
+    { "key": "hitachi", "name": "日立", "lat": 36.5996, "lng": 140.6516 }
+  ],
+  "11": [
+    { "key": "saitama", "name": "さいたま", "lat": 35.8617, "lng": 139.6455 },
+    { "key": "kawagoe", "name": "川越", "lat": 35.9251, "lng": 139.4858 },
+    { "key": "kumagaya", "name": "熊谷", "lat": 36.1474, "lng": 139.3886 },
+    { "key": "chichibu", "name": "秩父", "lat": 35.9919, "lng": 139.0853 }
+  ],
+  "12": [
+    { "key": "chiba", "name": "千葉", "lat": 35.6051, "lng": 140.1233 },
+    { "key": "funabashi", "name": "船橋", "lat": 35.6948, "lng": 139.9828 },
+    { "key": "choshi", "name": "銚子", "lat": 35.7345, "lng": 140.8267 },
+    { "key": "tateyama", "name": "館山", "lat": 34.9967, "lng": 139.8693 }
+  ],
+  "13": [
+    { "key": "shinjuku", "name": "新宿区", "lat": 35.6938, "lng": 139.7036 },
+    { "key": "setagaya", "name": "世田谷区", "lat": 35.6464, "lng": 139.6533 },
+    { "key": "hachioji", "name": "八王子市", "lat": 35.6557, "lng": 139.3239 },
+    { "key": "machida", "name": "町田市", "lat": 35.5429, "lng": 139.4467 },
+    { "key": "oshima", "name": "大島町", "lat": 34.7506, "lng": 139.3567 },
+    { "key": "ogasawara", "name": "小笠原村(父島)", "lat": 27.0936, "lng": 142.1918 }
+  ],
+  "14": [
+    { "key": "yokohama", "name": "横浜", "lat": 35.4437, "lng": 139.6380 },
+    { "key": "kawasaki", "name": "川崎", "lat": 35.5308, "lng": 139.7029 },
+    { "key": "yokosuka", "name": "横須賀", "lat": 35.2814, "lng": 139.6722 },
+    { "key": "odawara", "name": "小田原", "lat": 35.2566, "lng": 139.1591 },
+    { "key": "hakone", "name": "箱根", "lat": 35.2324, "lng": 139.1069 }
+  ],
+  "15": [
+    { "key": "niigata", "name": "新潟", "lat": 37.9026, "lng": 139.0235 },
+    { "key": "nagaoka", "name": "長岡", "lat": 37.4459, "lng": 138.8505 },
+    { "key": "joetsu", "name": "上越", "lat": 37.1481, "lng": 138.2358 },
+    { "key": "sado", "name": "佐渡", "lat": 38.0184, "lng": 138.3683 }
+  ],
+  "17": [
+    { "key": "kanazawa", "name": "金沢", "lat": 36.5947, "lng": 136.6256 },
+    { "key": "wajima", "name": "輪島(能登)", "lat": 37.3907, "lng": 136.8995 }
+  ],
+  "20": [
+    { "key": "nagano", "name": "長野", "lat": 36.6513, "lng": 138.181 },
+    { "key": "matsumoto", "name": "松本", "lat": 36.2381, "lng": 137.9719 },
+    { "key": "karuizawa", "name": "軽井沢", "lat": 36.3486, "lng": 138.5969 }
+  ],
+  "21": [
+    { "key": "gifu", "name": "岐阜", "lat": 35.4233, "lng": 136.7606 },
+    { "key": "takayama", "name": "高山", "lat": 36.1461, "lng": 137.2517 }
+  ],
+  "22": [
+    { "key": "shizuoka", "name": "静岡", "lat": 34.9769, "lng": 138.3831 },
+    { "key": "hamamatsu", "name": "浜松", "lat": 34.7108, "lng": 137.7261 },
+    { "key": "izu_shimoda", "name": "下田(伊豆)", "lat": 34.6797, "lng": 138.9457 },
+    { "key": "fuji", "name": "富士", "lat": 35.1612, "lng": 138.6764 }
+  ],
+  "23": [
+    { "key": "nagoya", "name": "名古屋", "lat": 35.1815, "lng": 136.9066 },
+    { "key": "toyohashi", "name": "豊橋", "lat": 34.7691, "lng": 137.3914 },
+    { "key": "okazaki", "name": "岡崎", "lat": 34.955, "lng": 137.1739 }
+  ],
+  "26": [
+    { "key": "kyoto", "name": "京都", "lat": 35.0116, "lng": 135.7681 },
+    { "key": "maizuru", "name": "舞鶴", "lat": 35.4499, "lng": 135.3303 }
+  ],
+  "27": [
+    { "key": "osaka", "name": "大阪市", "lat": 34.6937, "lng": 135.5023 },
+    { "key": "sakai", "name": "堺", "lat": 34.5733, "lng": 135.4830 },
+    { "key": "kishiwada", "name": "岸和田", "lat": 34.4622, "lng": 135.3711 }
+  ],
+  "28": [
+    { "key": "kobe", "name": "神戸", "lat": 34.6901, "lng": 135.1956 },
+    { "key": "himeji", "name": "姫路", "lat": 34.8151, "lng": 134.6856 },
+    { "key": "toyooka", "name": "豊岡", "lat": 35.5439, "lng": 134.8235 },
+    { "key": "sumoto", "name": "洲本(淡路)", "lat": 34.3431, "lng": 134.8956 }
+  ],
+  "33": [
+    { "key": "okayama", "name": "岡山", "lat": 34.6618, "lng": 133.9344 },
+    { "key": "tsuyama", "name": "津山", "lat": 35.0691, "lng": 134.0046 }
+  ],
+  "34": [
+    { "key": "hiroshima", "name": "広島", "lat": 34.3853, "lng": 132.4553 },
+    { "key": "fukuyama", "name": "福山", "lat": 34.4858, "lng": 133.3625 },
+    { "key": "onomichi", "name": "尾道", "lat": 34.4089, "lng": 133.2050 }
+  ],
+  "38": [
+    { "key": "matsuyama", "name": "松山", "lat": 33.8392, "lng": 132.7657 },
+    { "key": "uwajima", "name": "宇和島", "lat": 33.2236, "lng": 132.5604 }
+  ],
+  "40": [
+    { "key": "fukuoka", "name": "福岡市", "lat": 33.5904, "lng": 130.4017 },
+    { "key": "kitakyushu", "name": "北九州", "lat": 33.8835, "lng": 130.8751 },
+    { "key": "kurume", "name": "久留米", "lat": 33.3168, "lng": 130.5085 }
+  ],
+  "43": [
+    { "key": "kumamoto", "name": "熊本", "lat": 32.8031, "lng": 130.7079 },
+    { "key": "amakusa", "name": "天草", "lat": 32.4570, "lng": 130.1928 },
+    { "key": "hitoyoshi", "name": "人吉", "lat": 32.2103, "lng": 130.7621 }
+  ],
+  "46": [
+    { "key": "kagoshima", "name": "鹿児島", "lat": 31.5602, "lng": 130.5581 },
+    { "key": "amami", "name": "奄美", "lat": 28.3779, "lng": 129.4944 },
+    { "key": "yakushima", "name": "屋久島", "lat": 30.3585, "lng": 130.5510 }
+  ],
+  "47": [
+    { "key": "naha", "name": "那覇", "lat": 26.2125, "lng": 127.6809 },
+    { "key": "miyakojima", "name": "宮古島", "lat": 24.8056, "lng": 125.281 },
+    { "key": "ishigaki", "name": "石垣島", "lat": 24.3448, "lng": 124.1572 }
+  ]
+}
