@@ -1,4 +1,5 @@
 import prefecturesData from "@/data/prefectures.json";
+import subRegionsData from "@/data/subRegions.json";
 
 export interface Prefecture {
   code: string;
@@ -9,11 +10,34 @@ export interface Prefecture {
   region: string;
 }
 
+export interface SubRegion {
+  key: string;
+  name: string;
+  lat: number;
+  lng: number;
+}
+
 export const PREFECTURES: Prefecture[] = prefecturesData as Prefecture[];
 
 export const PREFECTURES_BY_CODE: Record<string, Prefecture> = Object.fromEntries(
   PREFECTURES.map((p) => [p.code, p])
 );
+
+export const SUB_REGIONS_BY_PREF: Record<string, SubRegion[]> =
+  subRegionsData as Record<string, SubRegion[]>;
+
+export function getSubRegions(prefCode: string | null | undefined): SubRegion[] {
+  if (!prefCode) return [];
+  return SUB_REGIONS_BY_PREF[prefCode] ?? [];
+}
+
+export function findSubRegion(
+  prefCode: string | null | undefined,
+  subKey: string | null | undefined
+): SubRegion | null {
+  if (!prefCode || !subKey) return null;
+  return getSubRegions(prefCode).find((s) => s.key === subKey) ?? null;
+}
 
 export const REGION_ORDER = ["北海道", "東北", "関東", "中部", "近畿", "中国", "四国", "九州"];
 
