@@ -13,9 +13,19 @@ interface Props {
   highlightKeys: MetricKey[];
   selectedMetric?: MetricKey;
   onSelectMetric?: (metric: MetricKey) => void;
+  /** When true, only show metrics in `highlightKeys`. Falls back to all when empty. */
+  focusOnly?: boolean;
 }
 
-export function CurrentMetricsGrid({ data, isLoading, regionCode, highlightKeys, selectedMetric, onSelectMetric }: Props) {
+export function CurrentMetricsGrid({
+  data,
+  isLoading,
+  regionCode,
+  highlightKeys,
+  selectedMetric,
+  onSelectMetric,
+  focusOnly = false,
+}: Props) {
   if (isLoading || !data) {
     return (
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
@@ -27,10 +37,16 @@ export function CurrentMetricsGrid({ data, isLoading, regionCode, highlightKeys,
   }
 
   const highlightSet = new Set(highlightKeys);
-  const ordered: MetricKey[] = [
+  const allOrdered: MetricKey[] = [
     ...highlightKeys.filter((k) => ALL_METRIC_KEYS.includes(k)),
     ...ALL_METRIC_KEYS.filter((k) => !highlightSet.has(k)),
   ];
+  // Focus mode collapses the grid to watched cards only; if the user has
+  // nothing watched yet, we fall back to showing everything so the screen
+  // is never empty.
+  const ordered = focusOnly && highlightKeys.length > 0
+    ? allOrdered.filter((k) => highlightSet.has(k))
+    : allOrdered;
 
   return (
     <AnimatePresence mode="wait">

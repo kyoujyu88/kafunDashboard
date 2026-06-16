@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CurrentMetricsGrid } from "@/components/dashboard/CurrentMetricsGrid";
+import { HeroSummaryCard } from "@/components/dashboard/HeroSummary";
 import { ForecastChart } from "@/components/dashboard/ForecastChart";
 import { JapanHeatmap } from "@/components/dashboard/JapanHeatmap";
 import { RegionSheet } from "@/components/dashboard/RegionSheet";
@@ -19,12 +20,14 @@ import { OnboardingDialog } from "@/components/settings/OnboardingDialog";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { useAirQuality } from "@/hooks/useAirQuality";
 import { useWeather } from "@/hooks/useWeather";
+import { useFocusMode } from "@/hooks/useFocusMode";
 import { useWatchAlerts } from "@/hooks/useWatchAlerts";
 import { useWatchProfile } from "@/hooks/useWatchProfile";
 import { useBrowserNotification } from "@/hooks/useBrowserNotification";
 import { usePersistedRegion } from "@/hooks/usePersistedRegion";
 import { useIsDesktop } from "@/hooks/useMediaQuery";
 import { computeLifeIndices } from "@/lib/lifeIndex";
+import { computeHeroSummary } from "@/lib/heroSummary";
 import { getPrefecture } from "@/lib/regions";
 import { formatRelative } from "@/lib/format";
 import type { MetricKey } from "@/lib/openMeteo.types";
@@ -58,6 +61,7 @@ export function Dashboard() {
   const [selectedMetric, setSelectedMetric] = useState<MetricKey | null>(null);
 
   const isDesktop = useIsDesktop();
+  const { focusOnly, toggle: toggleFocus } = useFocusMode();
 
   useEffect(() => {
     if (profileHydrated && !profile.onboarded) {
@@ -75,6 +79,11 @@ export function Dashboard() {
   const lifeIndices = useMemo(
     () => computeLifeIndices({ air: data, weather, profile }),
     [data, weather, profile]
+  );
+
+  const heroSummary = useMemo(
+    () => computeHeroSummary(data, highlightKeys),
+    [data, highlightKeys]
   );
 
   const defaultChartMetric: MetricKey = highlightKeys[0] ?? "pm2_5";
@@ -104,6 +113,8 @@ export function Dashboard() {
               regionName={region?.name ?? ""}
             />
 
+            <HeroSummaryCard summary={heroSummary} onSelectMetric={setSelectedMetric} />
+
             <WeatherSummaryCard data={weather} />
 
             <AnimatePresence mode="wait">
@@ -115,7 +126,7 @@ export function Dashboard() {
                 transition={{ duration: 0.3 }}
                 aria-live="polite"
               >
-                <div className="mb-2 flex items-baseline justify-between">
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <h2 className="text-base font-semibold sm:text-lg">
                     {region?.name}
                     <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
@@ -123,9 +134,18 @@ export function Dashboard() {
                     </span>
                   </h2>
                   {hasProfile && (
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      ⭐ 注目項目を強調表示中
-                    </span>
+                    <button
+                      type="button"
+                      onClick={toggleFocus}
+                      aria-pressed={focusOnly}
+                      className={
+                        focusOnly
+                          ? "shrink-0 rounded-full bg-cyan-600 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm transition active:scale-95"
+                          : "shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700"
+                      }
+                    >
+                      {focusOnly ? "⭐ 注目のみ表示中" : "⭐ 注目のみ表示"}
+                    </button>
                   )}
                 </div>
                 <CurrentMetricsGrid
@@ -135,6 +155,7 @@ export function Dashboard() {
                   highlightKeys={highlightKeys}
                   selectedMetric={chartMetric}
                   onSelectMetric={setSelectedMetric}
+                  focusOnly={focusOnly}
                 />
                 {lifeIndices.length > 0 && (
                   <div className="mt-2 sm:mt-3">
