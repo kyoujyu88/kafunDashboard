@@ -5,6 +5,7 @@ import { classifyWeatherCode, extractWeatherCurrent } from "@/lib/weather";
 import type { WeatherIcon, WeatherResponse } from "@/lib/weather.types";
 import { WindCompass } from "./WindCompass";
 import { cn } from "@/lib/cn";
+import { formatRelative } from "@/lib/format";
 
 interface Props {
   data: WeatherResponse | undefined;
@@ -40,6 +41,17 @@ export function WeatherSummaryCard({ data }: Props) {
   const { label, icon } = classifyWeatherCode(code);
   const Icon = ICON_MAP[icon];
 
+  // Open-Meteo の current.time は timezone=Asia/Tokyo を渡しているのでタイムゾーン
+  // 指定なし文字列で返る。Date が UTC として解釈してしまうのを避けるため +09:00 を補う。
+  const observedAt =
+    data.current?.time && data.timezone === "Asia/Tokyo"
+      ? new Date(`${data.current.time}:00+09:00`).getTime()
+      : data.current?.time
+        ? new Date(data.current.time).getTime()
+        : null;
+  const ageMin = observedAt !== null ? Math.floor((Date.now() - observedAt) / 60_000) : null;
+  const stale = ageMin !== null && ageMin >= 60;
+
   return (
     <section
       aria-label="気象サマリー"
@@ -64,6 +76,19 @@ export function WeatherSummaryCard({ data }: Props) {
           <WindCompass degrees={windDir} speedMs={windSpeed} size={26} />
         </div>
       </div>
+      {observedAt !== null && (
+        <p
+          className={cn(
+            "mt-1 text-[10px] tabular-nums",
+            stale
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-slate-400 dark:text-slate-500"
+          )}
+        >
+          観測 {formatRelative(observedAt)}
+          {stale && " (古い可能性あり)"}
+        </p>
+      )}
     </section>
   );
 }
