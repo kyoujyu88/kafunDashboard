@@ -14,9 +14,10 @@ export function useWeather(regionCode: string | null) {
     regionCode ? `/api/region/${regionCode}/weather` : null,
     fetcher,
     {
-      revalidateOnFocus: false,
-      dedupingInterval: 10 * 60 * 1000,
-      refreshInterval: 60 * 60 * 1000,
+      // ユーザーがタブに戻ったら鮮度をチェックしたい(古い値を信じない)。
+      revalidateOnFocus: true,
+      dedupingInterval: 5 * 60 * 1000,
+      refreshInterval: 10 * 60 * 1000,
     }
   );
 

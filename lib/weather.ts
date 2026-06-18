@@ -32,7 +32,7 @@ export async function fetchPointWeather(
   });
   const res = await fetch(`${BASE_URL}?${params.toString()}`, {
     signal,
-    next: { revalidate: 3600 },
+    next: { revalidate: 600 },
   });
   if (!res.ok) {
     throw new Error(`Open-Meteo weather error: ${res.status} ${res.statusText}`);
