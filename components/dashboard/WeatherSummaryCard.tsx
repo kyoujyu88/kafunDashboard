@@ -1,7 +1,7 @@
 "use client";
 
 import { Cloud, CloudFog, CloudRain, Snowflake, Sun, Zap } from "lucide-react";
-import { classifyWeatherCode, extractWeatherCurrent } from "@/lib/weather";
+import { classifyWeatherCode, extractWeatherCurrent, parseObservedTime } from "@/lib/weather";
 import type { WeatherIcon, WeatherResponse } from "@/lib/weather.types";
 import { WindCompass } from "./WindCompass";
 import { cn } from "@/lib/cn";
@@ -41,14 +41,7 @@ export function WeatherSummaryCard({ data }: Props) {
   const { label, icon } = classifyWeatherCode(code);
   const Icon = ICON_MAP[icon];
 
-  // Open-Meteo の current.time は timezone=Asia/Tokyo を渡しているのでタイムゾーン
-  // 指定なし文字列で返る。Date が UTC として解釈してしまうのを避けるため +09:00 を補う。
-  const observedAt =
-    data.current?.time && data.timezone === "Asia/Tokyo"
-      ? new Date(`${data.current.time}:00+09:00`).getTime()
-      : data.current?.time
-        ? new Date(data.current.time).getTime()
-        : null;
+  const observedAt = parseObservedTime(data.current?.time, data.timezone);
   const ageMin = observedAt !== null ? Math.floor((Date.now() - observedAt) / 60_000) : null;
   const stale = ageMin !== null && ageMin >= 60;
 

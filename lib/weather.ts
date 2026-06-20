@@ -32,12 +32,64 @@ export async function fetchPointWeather(
   });
   const res = await fetch(`${BASE_URL}?${params.toString()}`, {
     signal,
-    next: { revalidate: 600 },
+    // ルートハンドラ側で Cache-Control を動的に組み立てるため、Next.js のデータ
+    // キャッシュ(R2 + DO 経由の long-lived ISR)をここでは持たせない。
+    // 上流の更新サイクルに沿った CDN キャッシュだけが効くようにする。
+    cache: "no-store",
   });
   if (!res.ok) {
     throw new Error(`Open-Meteo weather error: ${res.status} ${res.statusText}`);
   }
   return (await res.json()) as WeatherResponse;
+}
+
+/**
+ * Open-Meteo の `current.time` をミリ秒 epoch に変換する。
+ * timezone=Asia/Tokyo 指定時は `"2026-06-18T14:45"` のように TZ オフセットなし
+ * 文字列で返るので、明示的に +09:00 を補ってから Date 化する。
+ */
+export function parseObservedTime(
+  iso: string | undefined,
+  timezone: string | undefined
+): number | null {
+  if (!iso) return null;
+  const hasOffset = /[Zz]$|[+-]\d{2}:?\d{2}$/.test(iso);
+  const target = hasOffset
+    ? iso
+    : timezone === "Asia/Tokyo"
+      ? `${iso}:00+09:00`
+      : `${iso}Z`;
+  const t = new Date(target).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+
+/**
+ * Open-Meteo の `current` は毎時 00/15/30/45 分の四半期境界で更新される。
+ * その更新スケジュールに合わせて、レスポンスを「次の境界 + 上流伝搬バッファ」
+ * までキャッシュするための CDN 用 TTL を返す。
+ *
+ * これにより:
+ * - 上流が新しい値を公開した瞬間にエッジが取りに行く(常に最新)
+ * - 同じ値を無駄に何度もリフェッチしない
+ * - 上流遅延時は短い SWR でカバー
+ */
+export function nextWeatherUpdateTtl(
+  currentTimeIso: string | undefined,
+  timezone: string | undefined,
+  now: number = Date.now()
+): { maxAge: number; swr: number } {
+  const observed = parseObservedTime(currentTimeIso, timezone);
+  if (observed === null) return { maxAge: 60, swr: 180 };
+
+  const SLOT_MS = 15 * 60 * 1000;
+  const PROPAGATION_BUFFER_MS = 90 * 1000;
+  const targetMs = observed + SLOT_MS + PROPAGATION_BUFFER_MS;
+  const secondsUntil = Math.floor((targetMs - now) / 1000);
+
+  // 30秒未満まで詰めると CDN が空転気味になるので下限 30 秒、
+  // 16.5分(SLOT + buffer)を上限としてキャップ。
+  const maxAge = Math.max(30, Math.min(secondsUntil, 16 * 60 + 30));
+  return { maxAge, swr: 180 };
 }
 
 export function extractWeatherCurrent(
