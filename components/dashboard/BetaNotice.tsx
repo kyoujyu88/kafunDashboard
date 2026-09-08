@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Info, X } from "lucide-react";
+import { SORAMAME } from "@/data/dataSources";
 
-const KEY = "kafun.beta.dismissed.v2";
+const KEY = "kafun.beta.dismissed.v3";
 
 export function BetaNotice() {
   const [dismissed, setDismissed] = useState(true);
@@ -23,7 +24,20 @@ export function BetaNotice() {
       <Info size={16} className="mt-0.5 shrink-0" />
       <div className="flex-1 space-y-1 leading-relaxed">
         <p>
-          表示している花粉・空気質値は <strong>CAMS Global モデル(~45km)</strong>の予報推計で、地上観測ではありません。
+          表示している花粉・空気質値は <strong>CAMS Global モデル(約40km格子)</strong>の予報推計で、地上観測ではありません。
+        </p>
+        <p>
+          そのため <strong>PM2.5 などは国内サイトの実測値と食い違います</strong>。
+          常時監視局の実測を確認するには{" "}
+          <a
+            href={SORAMAME.url}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium underline decoration-dotted underline-offset-2"
+          >
+            {SORAMAME.name}
+          </a>
+          をご覧ください。
         </p>
         <p>
           対応花粉:ハンノキ・シラカバ・イネ科・ヨモギ・オリーブ・ブタクサ(6種)。

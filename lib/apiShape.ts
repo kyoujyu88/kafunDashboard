@@ -1,5 +1,10 @@
 import { METRICS, type IntensityLevel } from "@/data/metrics.config";
-import { aggregateDaily, extractCurrentValue, extractHourlySeries } from "@/lib/openMeteo";
+import {
+  aggregateDaily,
+  extractCurrentValue,
+  extractHourlySeries,
+  parseJstTimestamp,
+} from "@/lib/openMeteo";
 import { ALL_METRIC_KEYS, type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
 import { classifyIntensity, getIntensityInfo } from "@/lib/intensity";
 import type { Prefecture } from "@/lib/regions";
@@ -52,7 +57,7 @@ export function buildRegionSnapshot(
     let peakLevel: IntensityLevel | null = null;
 
     for (let i = 0; i < time.length; i++) {
-      const ts = new Date(time[i]).getTime();
+      const ts = parseJstTimestamp(time[i]);
       if (ts < now || ts > limit) continue;
       const v = values[i];
       if (typeof v !== "number") continue;

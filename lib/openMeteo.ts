@@ -103,6 +103,24 @@ async function fetchCurrentOnly(
   return (await res.json()) as OpenMeteoResponse;
 }
 
+const HAS_TZ_OFFSET = /(?:Z|[+-]\d{2}:?\d{2})$/;
+
+/**
+ * Parses an Open-Meteo timestamp as JST.
+ *
+ * With `timezone=Asia/Tokyo` the API returns offset-less local timestamps
+ * ("2026-09-08T14:00"). `new Date()` reads those in the *runtime's* zone, which
+ * is UTC on Cloudflare Workers — shifting every hour by 9. Pin the offset so the
+ * result is the same wherever the code runs (server, or a browser abroad).
+ */
+export function parseJstTimestamp(iso: string | undefined | null): number {
+  if (!iso) return NaN;
+  if (HAS_TZ_OFFSET.test(iso)) return Date.parse(iso);
+  // Open-Meteo omits seconds; normalise before appending the offset.
+  const withSeconds = /T\d{2}:\d{2}$/.test(iso) ? `${iso}:00` : iso;
+  return Date.parse(`${withSeconds}+09:00`);
+}
+
 export function extractCurrentValue(
   response: OpenMeteoResponse | undefined,
   key: MetricKey

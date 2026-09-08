@@ -47,6 +47,8 @@ export async function GET() {
 
 ## 制限事項
 
+- 花粉・大気質は CAMS Global(約40km格子)の**モデル予報推計値**であり、地上常時監視局の実測値ではない。PM2.5 は特に、環境省「そらまめくん」やそれを参照する国内サービス(ウェザーニュース等)の実測値と食い違う
+- PM2.5 のしきい値は日本基準準拠: moderate=15(年平均環境基準) / high=35(日平均環境基準) / very_high=70(注意喚起の暫定指針値)。配信値は1時間値なので厳密な適用ではない
 - スギ・ヒノキ花粉は Open-Meteo 未対応のため非配信(別データソースで将来対応予定)
 - 放射線は SAFECAST(市民観測ベース)。公式値ではない参考データである旨に留意
 - レート制限: Open-Meteo 10,000 req/day/IP、SAFECAST はゆるやかな制限あり。サーバ側で30分〜1日キャッシュを噛ませている
@@ -57,6 +59,7 @@ export async function GET() {
 - Open-Meteo Air Quality API (CC BY 4.0): https://open-meteo.com/
 - SAFECAST (CC0): https://safecast.org/
 - 都道府県境界 GeoJSON: dataofjapan/land (MIT)
+- 参考(実測値): 環境省 そらまめくん https://soramame.env.go.jp/
 `;
 
   return new NextResponse(body, {
