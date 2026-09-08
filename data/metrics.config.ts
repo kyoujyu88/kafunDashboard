@@ -76,7 +76,11 @@ export const METRICS: Record<MetricKey, MetricMeta> = {
     category: "air",
     unit: "µg/m³",
     description: "微小粒子状物質。呼吸器・循環器に影響",
-    thresholds: { moderate: 12, high: 35, very_high: 55 },
+    // 日本の基準に合わせた区分。high=35 は環境基準の日平均値、very_high=70 は
+    // 注意喚起の暫定指針値(日平均)、moderate=15 は年平均の環境基準。
+    // 表示しているのは1時間値なので厳密な適用ではないが、日平均を掲げる
+    // 国内サイト(そらまめくん等)の色分けに近い読み方ができる。
+    thresholds: { moderate: 15, high: 35, very_high: 70 },
   },
   pm10: {
     key: "pm10",

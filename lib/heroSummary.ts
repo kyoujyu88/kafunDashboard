@@ -1,5 +1,5 @@
 import { METRICS } from "@/data/metrics.config";
-import { extractCurrentValue, extractHourlySeries } from "@/lib/openMeteo";
+import { extractCurrentValue, extractHourlySeries, parseJstTimestamp } from "@/lib/openMeteo";
 import { classifyIntensity } from "@/lib/intensity";
 import { ALL_METRIC_KEYS, type MetricKey, type OpenMeteoResponse } from "@/lib/openMeteo.types";
 import type { IntensityLevel } from "@/data/metrics.config";
@@ -136,7 +136,7 @@ function computeTrend(
   const now = Date.now();
   let currIdx = -1;
   for (let i = time.length - 1; i >= 0; i--) {
-    if (new Date(time[i]).getTime() <= now && values[i] !== null) {
+    if (parseJstTimestamp(time[i]) <= now && values[i] !== null) {
       currIdx = i;
       break;
     }

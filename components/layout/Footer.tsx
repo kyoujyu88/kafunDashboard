@@ -1,5 +1,5 @@
 import { Rss, Code2, Bot, FileText } from "lucide-react";
-import { DATA_SOURCES } from "@/data/dataSources";
+import { DATA_SOURCES, SORAMAME } from "@/data/dataSources";
 
 const LINKS = [
   { href: "/feed.xml", label: "全国RSS", icon: Rss },
@@ -70,6 +70,20 @@ export function Footer() {
       <p className="mt-1 leading-relaxed">
         花粉値は <strong>grains/m³</strong>(CAMSモデルの予報単位)。
         日本の実測単位「個/cm²/日」とは異なります。
+      </p>
+      <p className="mt-1 leading-relaxed">
+        PM2.5・大気質は <strong>約40km格子のモデル推計値</strong>で、常時監視局の実測ではありません。
+        国内の実測値(1時間値・速報)は{" "}
+        <a
+          className="underline decoration-dotted"
+          href={SORAMAME.url}
+          target="_blank"
+          rel="noreferrer"
+          title={SORAMAME.description}
+        >
+          {SORAMAME.name}
+        </a>{" "}
+        で確認できます。
       </p>
       <p className="mt-2">
         本サイトは情報提供のみを目的としています。健康に関する判断は医療従事者にご相談ください。
